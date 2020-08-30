@@ -67,7 +67,7 @@ class Trajectory:
     def plot(self):
         assert (False)
 
-    def transform_p(self, scale=1.0, t=np.zeros((3,)), R=np.identity(3)):
+    def transform(self, scale=1.0, t=np.zeros((3,)), R=np.identity(3)):
         p_es_aligned = np.zeros(np.shape(self.p_vec))
         q_es_aligned = np.zeros(np.shape(self.q_vec))
         for i in range(np.shape(self.p_vec)[0]):
@@ -81,9 +81,6 @@ class Trajectory:
 
         self.p_vec = p_es_aligned
         self.q_vec = q_es_aligned
-
-    def transform_q(self, R=np.identity(3)):
-        assert (False)
 
     @staticmethod
     def get_distances_from_start(p_vec):
