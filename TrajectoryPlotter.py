@@ -1,50 +1,12 @@
 import os
 import numpy as np
-from enum import Enum
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # <--- This is important for 3d plotting
 
 from csv2dataframe.TUMCSV2DataFrame import TUMCSV2DataFrame
 from trajectory.Trajectory import Trajectory
-
-
-class TrajectoryPlotTypes(Enum):
-    scatter_3D = 'scatter_3D'
-    plot_3D = 'plot_3D'
-    plot_2D_over_t = 'plot_2D_over_t'
-    plot_2D_over_dist = 'plot_2D_over_dist'
-
-    def __str__(self):
-        return self.value
-
-
-class TrajectoryPlotConfig():
-    white_list = []
-    num_points = []
-    plot_type = TrajectoryPlotTypes.plot_3D
-    dpi = 200
-    title = ""
-    scale = 1.0
-    save_fn = ""
-    result_dir = "."
-    show = True
-    close_figure = False
-    radians = True
-
-    def __init__(self, white_list=[], num_points=[],
-                 plot_type=TrajectoryPlotTypes.plot_3D, dpi=200, title="",
-                 scale=1.0, save_fn="", result_dir=".", show=True, close_figure=False, radians=True):
-        self.white_list = white_list
-        self.num_points = num_points
-        self.plot_type = plot_type
-        self.dpi = dpi
-        self.title = title
-        self.scale = scale
-        self.save_fn = save_fn
-        self.result_dir = result_dir
-        self.show = show
-        self.close_figure = close_figure
-        self.radians = radians
+from trajectory.TrajectoryPlotConfig import TrajectoryPlotConfig
+from trajectory.TrajectoryPlotTypes import TrajectoryPlotTypes
 
 
 class TrajectoryPlotter:
