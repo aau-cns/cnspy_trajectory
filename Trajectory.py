@@ -4,6 +4,8 @@ import os
 import numpy as np
 import trajectory_evaluation.transformations as tf
 from csv2dataframe.TUMCSV2DataFrame import TUMCSV2DataFrame
+from csv2dataframe.CSV2DataFrame import CSV2DataFrame
+from ros_csv_formats.CSVFormat import CSVFormat
 
 
 class Trajectory:
@@ -19,13 +21,12 @@ class Trajectory:
             self.p_vec = p_vec
             self.q_vec = q_vec
 
-    def load_from_CSV(self, filename, sep='\s+|\,', comment='#',
-                      header=['t', 'tx', 'ty', 'tz', 'qx', 'qy', 'qz', 'qw']):
+    def load_from_CSV(self, filename):
         if not os.path.isfile(filename):
             print("Trajectory: could not find file %s" % os.path.abspath(filename))
             return False
 
-        df = TUMCSV2DataFrame.load_CSV(filename=filename, sep=sep, comment=comment, header=header)
+        df = CSV2DataFrame.load_CSV(filename=filename, fm=CSVFormat.TUM)
         self.load_from_DataFrame(df)
         return True
 
