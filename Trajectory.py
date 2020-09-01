@@ -26,7 +26,7 @@ class Trajectory:
             print("Trajectory: could not find file %s" % os.path.abspath(filename))
             return False
 
-        df = CSV2DataFrame.load_CSV(filename=filename, fm=CSVFormat.TUM)
+        df = CSV2DataFrame.load_CSV(filename=filename, fmt=CSVFormat.TUM)
         self.load_from_DataFrame(df)
         return True
 

@@ -5,8 +5,10 @@ from mpl_toolkits.mplot3d import Axes3D  # <--- This is important for 3d plottin
 
 from csv2dataframe.TUMCSV2DataFrame import TUMCSV2DataFrame
 from trajectory.Trajectory import Trajectory
+from trajectory.TrajectoryEstimated import TrajectoryEstimated
 from trajectory.TrajectoryPlotConfig import TrajectoryPlotConfig
 from trajectory.TrajectoryPlotTypes import TrajectoryPlotTypes
+from trajectory.pyplot_utils import set_axes_equal
 
 
 class TrajectoryPlotter:
@@ -220,6 +222,8 @@ class TrajectoryPlotter:
         ax.set_xlabel('x')
         ax.set_ylabel('y')
         ax.set_zlabel('z')
+        set_axes_equal(ax)
+        ax.view_init(elev=cfg.view_angle[0], azim=cfg.view_angle[1])
 
         TrajectoryPlotter.show_save_figure(cfg, fig)
 
@@ -322,6 +326,12 @@ class TrajectoryPlotter_Test(unittest.TestCase):
         self.assertFalse(traj.is_empty())
         return traj
 
+    def load_trajectory3_from_CSV(self):
+        traj = TrajectoryEstimated()
+        traj.load_from_CSV(filename='../sample_data/ID1-pose-est-cov.csv')
+        self.assertFalse(traj.is_empty())
+        return traj
+
     def test_plot_3D(self):
         traj = self.load_trajectory_from_CSV()
 
@@ -349,6 +359,12 @@ class TrajectoryPlotter_Test(unittest.TestCase):
 
         TrajectoryPlotter.multi_plot_3D([plotter1, plotter2], cfg=TrajectoryPlotConfig(show=True),
                                         name_list=['gt', 'est'])
+
+    def test_plot_estimated_traj(self):
+        plotter = TrajectoryPlotter(traj_obj=self.load_trajectory3_from_CSV())
+        plotter.plot_pose()
+        plotter.plot_3D()
+        print('done')
 
 
 if __name__ == "__main__":
