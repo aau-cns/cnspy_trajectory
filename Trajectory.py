@@ -86,7 +86,7 @@ class Trajectory:
     @staticmethod
     def get_distances_from_start(p_vec):
         distances = np.diff(p_vec[:, 0:3], axis=0)
-        distances = np.sqrt(np.sum(np.multiply(distances, distances), 1))
+        distances = np.sqrt(np.sum(np.multiply(distances, distances), axis=1))
         distances = np.cumsum(distances)
         distances = np.concatenate(([0], distances))
         return distances
