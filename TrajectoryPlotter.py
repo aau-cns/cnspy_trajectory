@@ -2,11 +2,12 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # <--- This is important for 3d plotting
-
+# from mpl_toolkits.mplot3d import Axes3D  # <--- This is important for 3d plotting
 from csv2dataframe.TUMCSV2DataFrame import TUMCSV2DataFrame
 from trajectory.Trajectory import Trajectory
 from trajectory.TrajectoryEstimated import TrajectoryEstimated
-from trajectory.TrajectoryPlotConfig import TrajectoryPlotConfig, PlotLineStyle
+from trajectory.TrajectoryPlotConfig import TrajectoryPlotConfig
+from trajectory.PlotLineStyle import PlotLineStyle
 from trajectory.TrajectoryPlotTypes import TrajectoryPlotTypes
 from trajectory.pyplot_utils import set_axes_equal
 
