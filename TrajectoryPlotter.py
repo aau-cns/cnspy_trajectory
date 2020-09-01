@@ -12,6 +12,14 @@ from trajectory.TrajectoryPlotTypes import TrajectoryPlotTypes
 from trajectory.pyplot_utils import set_axes_equal
 
 
+# TODO: extract some features into dedicated plotting class:
+# PosePlotter
+#  - ax_plot_n_dim, ax_plot_pos/rpq/q, ax_plot_pos_3D,
+#  - plot_pose
+#  - show_save_figure
+#  - plot 3 sigma bounds
+#  - legend show ARMSE
+
 class TrajectoryPlotter:
     traj_obj = None
     traj_df = None
