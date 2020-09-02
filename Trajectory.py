@@ -40,7 +40,7 @@ class Trajectory:
         if self.is_empty():
             return False
         df = TUMCSV2DataFrame.TPQ_to_DataFrame(self.t_vec, self.p_vec, self.q_vec)
-        TUMCSV2DataFrame.save_CSV(df, filename=filename)
+        TUMCSV2DataFrame.save_CSV(df, filename=filename, fmt=CSVFormat.TUM)
         return True
 
     def is_empty(self):
