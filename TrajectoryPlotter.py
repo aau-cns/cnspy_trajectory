@@ -205,7 +205,7 @@ class TrajectoryPlotter:
         else:
             self.ax_plot_q(ax=ax2, cfg=cfg)
 
-        TrajectoryPlotter.show_save_figure(cfg, fig)
+        TrajectoryPlotConfig.show_save_figure(cfg, fig)
 
         return fig, ax1, ax2
 
@@ -237,7 +237,7 @@ class TrajectoryPlotter:
         set_axes_equal(ax)
         ax.view_init(elev=cfg.view_angle[0], azim=cfg.view_angle[1])
 
-        TrajectoryPlotter.show_save_figure(cfg, fig)
+        TrajectoryPlotConfig.show_save_figure(cfg, fig)
 
         return fig, ax
 
@@ -264,7 +264,7 @@ class TrajectoryPlotter:
         plt.draw()
         plt.pause(0.001)
 
-        TrajectoryPlotter.show_save_figure(cfg, fig)
+        TrajectoryPlotConfig.show_save_figure(cfg, fig)
 
         return fig, ax
 
@@ -309,22 +309,9 @@ class TrajectoryPlotter:
             plotter_err.ax_plot_q(ax=ax4, cfg=cfg)
             ax4.set_ylabel('quaternion err')
 
-        TrajectoryPlotter.show_save_figure(cfg, fig)
+        TrajectoryPlotConfig.show_save_figure(cfg, fig)
 
         return fig, ax1, ax2, ax3, ax4
-
-    @staticmethod
-    def show_save_figure(cfg, fig):
-        plt.draw()
-        plt.pause(0.001)
-        if cfg.save_fn:
-            filename = os.path.join(cfg.result_dir, cfg.save_fn)
-            print("save to file: " + filename)
-            plt.savefig(filename, dpi=int(cfg.dpi))
-        if cfg.show:
-            plt.show()
-        if cfg.close_figure:
-            plt.close(fig)
 
 
 ########################################################################################################################

@@ -1,3 +1,5 @@
+import os
+import matplotlib.pyplot as plt
 from trajectory.TrajectoryPlotTypes import TrajectoryPlotTypes
 
 
@@ -32,3 +34,16 @@ class TrajectoryPlotConfig():
         self.close_figure = close_figure
         self.radians = radians
         self.view_angle = view_angle
+
+    @staticmethod
+    def show_save_figure(cfg, fig):
+        plt.draw()
+        plt.pause(0.001)
+        if cfg.save_fn:
+            filename = os.path.join(cfg.result_dir, cfg.save_fn)
+            print("save to file: " + filename)
+            plt.savefig(filename, dpi=int(cfg.dpi))
+        if cfg.show:
+            plt.show()
+        if cfg.close_figure:
+            plt.close(fig)
