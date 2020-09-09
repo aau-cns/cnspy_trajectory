@@ -345,17 +345,11 @@ import math
 class TrajectoryPlotter_Test(unittest.TestCase):
     def load_trajectory_from_CSV(self):
         traj = Trajectory()
-        traj.load_from_CSV(filename='../test/example/stamped_groundtruth.csv')
+        traj.load_from_CSV(filename='../sample_data/ID1-pose-gt.csv')
         self.assertFalse(traj.is_empty())
         return traj
 
     def load_trajectory2_from_CSV(self):
-        traj = Trajectory()
-        traj.load_from_CSV(filename='../test/example/est.csv')
-        self.assertFalse(traj.is_empty())
-        return traj
-
-    def load_trajectory3_from_CSV(self):
         traj = TrajectoryEstimated()
         traj.load_from_CSV(filename='../sample_data/ID1-pose-est-cov.csv')
         self.assertFalse(traj.is_empty())
@@ -390,7 +384,7 @@ class TrajectoryPlotter_Test(unittest.TestCase):
                                         name_list=['gt', 'est'])
 
     def test_plot_estimated_traj(self):
-        plotter = TrajectoryPlotter(traj_obj=self.load_trajectory3_from_CSV())
+        plotter = TrajectoryPlotter(traj_obj=self.load_trajectory2_from_CSV())
         plotter.plot_pose(angles=True, cfg=TrajectoryPlotConfig(radians=False,
                                                                 plot_type=TrajectoryPlotTypes.plot_2D_over_t))
         plotter.plot_3D()
