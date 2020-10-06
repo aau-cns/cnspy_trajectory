@@ -128,7 +128,7 @@ class Trajectory_Test(unittest.TestCase):
     def load_trajectory_from_CSV(self):
         print('loading...')
         traj = Trajectory()
-        traj.load_from_CSV(filename='../test/example/gt.csv')
+        traj.load_from_CSV(filename='../sample_data/ID1-pose-est.csv')
         return traj
 
     def test_load_trajectory_from_CSV(self):
@@ -138,7 +138,7 @@ class Trajectory_Test(unittest.TestCase):
     def test_save_to_CSV(self):
         traj = Trajectory()
 
-        saved = traj.save_to_CSV('/home/jungr/workspace/NAV/development/aaunav_data_analysis_py/test/example/empty.csv')
+        saved = traj.save_to_CSV('../results/empty1.csv')
         self.assertFalse(saved)
 
         traj.p_vec = np.array([[0, 0, 0],
@@ -153,7 +153,7 @@ class Trajectory_Test(unittest.TestCase):
                                [1],
                                [2],
                                [3]])
-        saved = traj.save_to_CSV('/home/jungr/workspace/NAV/development/aaunav_data_analysis_py/test/example/empty.csv')
+        saved = traj.save_to_CSV('../results/empty2.csv')
         self.assertTrue(saved)
 
     def test_get_distance_from_start(self):

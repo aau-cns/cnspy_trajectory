@@ -268,7 +268,10 @@ class TrajectoryPlotter:
 
         fig = plt.figure(figsize=(20, 15), dpi=int(cfg.dpi))
         ax = fig.add_subplot(111, projection='3d')
-        colors = plt.cm.spectral(np.linspace(0.1, 0.9, num_plots))
+
+        # https://stackoverflow.com/questions/51452112/how-to-fix-cm-spectral-module-matplotlib-cm-has-no-attribute-spectral
+        cmap = plt.cm.get_cmap("Spectral")
+        colors = cmap(np.linspace(0.1, 0.9, num_plots))
         ax.set_prop_cycle('color', colors)
 
         idx = 0

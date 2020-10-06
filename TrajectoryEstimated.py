@@ -20,7 +20,7 @@
 # enum
 ########################################################################################################################
 import os
-from Trajectory import Trajectory
+from trajectory.Trajectory import Trajectory
 from csv2dataframe.PoseWithCov2DataFrame import PoseWithCov2DataFrame
 from csv2dataframe.CSV2DataFrame import CSV2DataFrame
 from ros_csv_formats.CSVFormat import CSVFormat
@@ -77,7 +77,7 @@ class TrajectoryEstimated_Test(unittest.TestCase):
         self.start_time = time.time()
 
     def stop(self):
-        print "Process time: " + str((time.time() - self.start_time))
+        print("Process time: " + str((time.time() - self.start_time)))
 
     def load_(self):
         print('loading...')
@@ -95,7 +95,7 @@ class TrajectoryEstimated_Test(unittest.TestCase):
         print(obj.Sigma_p_vec[1000])
         print(obj.Sigma_p_vec[1000])
         self.start()
-        obj.save_to_CSV(filename='../test/ID1-pose-est-cov-copy.csv')
+        obj.save_to_CSV(filename='../results/ID1-pose-est-cov-copy.csv')
         self.stop()
 
 

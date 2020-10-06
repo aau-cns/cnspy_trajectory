@@ -27,7 +27,7 @@ from trajectory.TrajectoryPlotTypes import TrajectoryPlotTypes
 # https://matplotlib.org/2.1.2/api/_as_gen/matplotlib.pyplot.plot.html
 class TrajectoryPlotConfig():
     white_list = []
-    num_points = []
+    num_points = 0
     plot_type = TrajectoryPlotTypes.plot_3D
     dpi = 200
     title = ""
@@ -39,7 +39,7 @@ class TrajectoryPlotConfig():
     radians = True
     view_angle = (45, 45)  # viewing angle of 3D plots tuple(elevation, azimuth)
 
-    def __init__(self, white_list=[], num_points=[],
+    def __init__(self, white_list=[], num_points=0,
                  plot_type=TrajectoryPlotTypes.plot_3D, dpi=200, title="",
                  scale=1.0, save_fn="", result_dir=".", show=True, close_figure=False, radians=True,
                  view_angle=(45, 45)):
