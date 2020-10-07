@@ -227,7 +227,6 @@ class TrajectoryPlotter:
             self.ax_plot_q(ax=ax2, cfg=cfg)
 
         TrajectoryPlotConfig.show_save_figure(cfg, fig)
-
         return fig, ax1, ax2
 
     def plot_3D(self, fig=None, ax=None, cfg=None):
@@ -251,7 +250,7 @@ class TrajectoryPlotter:
         self.ax_plot_pos_3D(ax=ax, cfg=cfg)
 
         ax.legend(shadow=True, fontsize='x-small')
-        ax.grid()
+        ax.grid(b=True)
         ax.set_xlabel('x')
         ax.set_ylabel('y')
         ax.set_zlabel('z')
@@ -278,7 +277,7 @@ class TrajectoryPlotter:
             idx += 1
 
         ax.legend(shadow=True, fontsize='x-small')
-        ax.grid()
+        ax.grid(b=True)
         ax.set_xlabel('x')
         ax.set_ylabel('y')
         ax.set_zlabel('z')
@@ -330,6 +329,10 @@ class TrajectoryPlotter:
             plotter_err.ax_plot_q(ax=ax4, cfg=cfg)
             ax4.set_ylabel('quaternion err')
 
+        ax1.grid(b=True)
+        ax2.grid(b=True)
+        ax3.grid(b=True)
+        ax4.grid(b=True)
         TrajectoryPlotConfig.show_save_figure(cfg, fig)
 
         return fig, ax1, ax2, ax3, ax4
