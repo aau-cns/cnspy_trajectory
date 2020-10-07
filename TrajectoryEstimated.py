@@ -43,9 +43,9 @@ class TrajectoryEstimated(Trajectory):
             print("Trajectory: could not find file %s" % os.path.abspath(filename))
             return False
 
-        df = CSV2DataFrame.load_CSV(filename=filename, fmt=CSVFormat.PoseWithCov)
-        self.load_from_DataFrame(df)
-        return True
+        loader = CSV2DataFrame(filename=filename)
+        self.load_from_DataFrame(loader.data_frame)
+        return loader.data_loaded
 
     def load_from_DataFrame(self, df):
         self.t_vec, self.p_vec, self.q_vec, self.Sigma_p_vec, self.Sigma_q_vec = PoseWithCov2DataFrame.DataFrame_to_TPQCov(
