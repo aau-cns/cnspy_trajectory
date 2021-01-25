@@ -23,7 +23,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # <--- This is important for 3d plotting
-# from mpl_toolkits.mplot3d import Axes3D  # <--- This is important for 3d plotting
+# from mpl_toolkits.mplot3d import Axes3D  # <--- This is important for 3d plotting (copy, if accidentally auto-removed)
 from csv2dataframe.TUMCSV2DataFrame import TUMCSV2DataFrame
 from trajectory.Trajectory import Trajectory
 from trajectory.TrajectoryEstimated import TrajectoryEstimated

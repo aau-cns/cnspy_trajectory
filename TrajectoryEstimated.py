@@ -27,7 +27,12 @@ from ros_csv_formats.CSVFormat import CSVFormat
 
 
 class TrajectoryEstimated(Trajectory):
+    # position uncertainty: 3x3 covariance matrix.
+    # The with upper triangular elements are vectorized: 'pxx', 'pxy', 'pxz', 'pyy', 'pyz', 'pzz'
     Sigma_p_vec = None
+
+    # small angle `theta` uncertainty: R = ( eye(3) + slew(theta)), a 3x3 covariance matrix.
+    # The with upper triangular elements are vectorized: 'qrr', 'qrp', 'qry', 'qpp', 'qpy', 'qyy'
     Sigma_q_vec = None
 
     def __init__(self, t_vec=None, p_vec=None, q_vec=None, Sigma_p_vec=None, Sigma_q_vec=None, df=None):
