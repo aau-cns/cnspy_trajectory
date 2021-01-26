@@ -22,8 +22,8 @@
 #
 #         if {CSVFormatPose.get_format(CSVFormatPose.TUM)}.issubset(df.columns):
 #             self.fmt = CSVFormat.TUM
-#         elif {CSVFormatPose.get_format(CSVFormatPose.TUM_short)}.issubset(df.columns):
-#             self.fmt = CSVFormat.TUM_short
+#         elif {CSVFormatPose.get_format(CSVFormatPose.PositionStamped)}.issubset(df.columns):
+#             self.fmt = CSVFormat.PositionStamped
 #         else:
 #             print('columns in data frame not supported {0}'.format(str(df.coumns)))
 #
