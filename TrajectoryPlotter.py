@@ -351,13 +351,13 @@ import math
 class TrajectoryPlotter_Test(unittest.TestCase):
     def load_trajectory_from_CSV(self):
         traj = Trajectory()
-        traj.load_from_CSV(filename='../sample_data/ID1-pose-gt.csv')
+        traj.load_from_CSV(filename='./sample_data/ID1-pose-gt.csv')
         self.assertFalse(traj.is_empty())
         return traj
 
     def load_trajectory2_from_CSV(self):
         traj = TrajectoryEstimated()
-        traj.load_from_CSV(filename='../sample_data/ID1-pose-est-cov.csv')
+        traj.load_from_CSV(filename='./sample_data/ID1-pose-est-cov.csv')
         self.assertFalse(traj.is_empty())
         return traj
 

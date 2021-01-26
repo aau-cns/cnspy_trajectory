@@ -86,7 +86,7 @@ class TrajectoryEstimated_Test(unittest.TestCase):
 
     def load_(self):
         print('loading...')
-        fn = '../sample_data/ID1-pose-est-cov.csv'
+        fn = './sample_data/ID1-pose-est-cov.csv'
         obj = TrajectoryEstimated()
         obj.load_from_CSV(filename=fn)
         return obj
@@ -100,7 +100,7 @@ class TrajectoryEstimated_Test(unittest.TestCase):
         print(obj.Sigma_p_vec[1000])
         print(obj.Sigma_p_vec[1000])
         self.start()
-        obj.save_to_CSV(filename='../results/ID1-pose-est-cov-copy.csv')
+        obj.save_to_CSV(filename='./results/ID1-pose-est-cov-copy.csv')
         self.stop()
 
 
