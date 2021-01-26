@@ -8,7 +8,7 @@
 # from trajectory.TrajectoryPlotter import TrajectoryPlotter
 # from trajectory.TrajectoryPlotConfig import TrajectoryPlotConfig
 # from trajectory.pyplot_utils import set_axes_equal
-# from ros_csv_formats.CSVFormat import CSVFormat
+# from spatial_csv_formats.CSVFormat import CSVFormat
 # from numpy_utils.accumulated_distance import *
 #
 #
