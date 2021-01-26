@@ -8,7 +8,7 @@
 # from trajectory.TrajectoryPlotter import TrajectoryPlotter
 # from trajectory.TrajectoryPlotConfig import TrajectoryPlotConfig
 # from trajectory.pyplot_utils import set_axes_equal
-# from spatial_csv_formats.CSVFormat import CSVFormat
+# from spatial_csv_formats.CSVFormatPose import CSVFormatPose
 # from numpy_utils.accumulated_distance import *
 #
 #
@@ -20,9 +20,9 @@
 #         assert (isinstance(df, pandas.DataFrame))
 #         self.data_frame = df
 #
-#         if {CSVFormat.get_format(CSVFormat.TUM)}.issubset(df.columns):
+#         if {CSVFormatPose.get_format(CSVFormatPose.TUM)}.issubset(df.columns):
 #             self.fmt = CSVFormat.TUM
-#         elif {CSVFormat.get_format(CSVFormat.TUM_short)}.issubset(df.columns):
+#         elif {CSVFormatPose.get_format(CSVFormatPose.TUM_short)}.issubset(df.columns):
 #             self.fmt = CSVFormat.TUM_short
 #         else:
 #             print('columns in data frame not supported {0}'.format(str(df.coumns)))

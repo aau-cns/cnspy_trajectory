@@ -25,7 +25,7 @@ import numpy as np
 import numpy_utils.transformations as tf
 from csv2dataframe.TUMCSV2DataFrame import TUMCSV2DataFrame
 from csv2dataframe.CSV2DataFrame import CSV2DataFrame
-from spatial_csv_formats.CSVFormat import CSVFormat
+from spatial_csv_formats.CSVFormatPose import CSVFormatPose
 
 
 class Trajectory:
@@ -60,7 +60,7 @@ class Trajectory:
         if self.is_empty():
             return False
         df = TUMCSV2DataFrame.TPQ_to_DataFrame(self.t_vec, self.p_vec, self.q_vec)
-        TUMCSV2DataFrame.save_CSV(df, filename=filename, fmt=CSVFormat.TUM)
+        TUMCSV2DataFrame.save_CSV(df, filename=filename, fmt=CSVFormatPose.TUM)
         return True
 
     def is_empty(self):

@@ -23,7 +23,7 @@ import os
 from trajectory.Trajectory import Trajectory
 from csv2dataframe.PoseWithCov2DataFrame import PoseWithCov2DataFrame
 from csv2dataframe.CSV2DataFrame import CSV2DataFrame
-from spatial_csv_formats.CSVFormat import CSVFormat
+from spatial_csv_formats.CSVFormatPose import CSVFormatPose
 
 
 class TrajectoryEstimated(Trajectory):
@@ -64,7 +64,7 @@ class TrajectoryEstimated(Trajectory):
         if self.is_empty():
             return False
         df = self.to_DataFrame()
-        CSV2DataFrame.save_CSV(df, filename=filename, fmt=CSVFormat.PoseWithCov)
+        CSV2DataFrame.save_CSV(df, filename=filename, fmt=CSVFormatPose.PoseWithCov)
         return True
 
 
