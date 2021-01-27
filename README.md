@@ -15,7 +15,9 @@ The `TrajectoryPlotter` offers methods to visualize a (or multiple) `Trajectory`
 ## Dependencies
 
 * [numpy]()
-* [enum]()
+* [matplotlib]()
+* [pandas]()
+* [scipy]()
 * [numpy_utils]()
 * [trajectory]()
 * [csv2dataframe]()
