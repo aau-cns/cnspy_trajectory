@@ -37,7 +37,7 @@ class TrajectoryPlotConfig():
     show = True
     close_figure = False
     radians = True
-    view_angle = (45, 45)  # viewing angle of 3D plots tuple(elevation, azimuth)
+    view_angle = (45, 45)  # viewing angle of 3D plots tuple (azimuth, elevation)
 
     def __init__(self, white_list=[], num_points=0,
                  plot_type=TrajectoryPlotTypes.plot_3D, dpi=200, title="",
@@ -57,7 +57,21 @@ class TrajectoryPlotConfig():
         self.view_angle = view_angle
 
     @staticmethod
+    def set_view_angle(cfg, ax):
+        """
+        set the view angle of a 3D plot
+
+        Input:
+        cfg -- TrajectoryPlotConfig
+        ax  -- axes.Axes
+        """
+        assert (isinstance(cfg, TrajectoryPlotConfig))
+        ax.view_init(azim=cfg.view_angle[0], elev=cfg.view_angle[1])
+
+    @staticmethod
     def show_save_figure(cfg, fig):
+        assert (isinstance(cfg, TrajectoryPlotConfig))
+        assert(isinstance(fig, plt.Figure))
         plt.draw()
         plt.pause(0.001)
         if cfg.save_fn:
