@@ -293,6 +293,9 @@ class TrajectoryPlotter:
 
     @staticmethod
     def plot_pose_err(plotter_est, plotter_err, fig=None, cfg=None, angles=False, plotter_gt=None):
+        assert(isinstance(plotter_err, TrajectoryPlotter))
+        assert(isinstance(plotter_est, TrajectoryPlotter))
+
         if cfg is None:
             cfg = plotter_est.config
 
@@ -378,7 +381,7 @@ class TrajectoryPlotter_Test(unittest.TestCase):
         plotter.plot_pose(angles=True, cfg=TrajectoryPlotConfig(show=False,
                                                                 close_figure=False,
                                                                 radians=False,
-                                                                plot_type=TrajectoryPlotTypes.plot_2D_over_dist))
+                                                                plot_type=TrajectoryPlotTypes.plot_2D_over_t))
         print('done')
 
     def test_plot_multi(self):

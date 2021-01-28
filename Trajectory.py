@@ -35,9 +35,30 @@ class Trajectory:
     t_vec = None
 
     def __init__(self, t_vec=None, p_vec=None, q_vec=None, df=None):
+        """
+            CTOR expects either a pandas.DataFrame or a (timestamp + position + quaternion) matrix
+
+            INPUT:
+            t_vec -- [Nx1] matrix, containing N timestamps
+            p_vec -- [Nx3] matrix, containing x,y,z positions
+            q_vec -- [Nx4] matrix, containing quaternions [x,y,z,w]
+            df -- pandas.DataFrame holding a table with ['t', 'tx', 'ty', 'tz','qx', 'qy', 'qz', 'qw']
+        """
         if df is not None:
             self.load_from_DataFrame(df)
-        else:
+        elif t_vec is not None and p_vec is not None and q_vec is not None:
+            if t_vec.ndim == 1:
+                t_vec = np.array([t_vec])
+
+            t_rows, t_cols = t_vec.shape
+            p_rows, p_cols = p_vec.shape
+            q_rows, q_cols = q_vec.shape
+            assert (t_rows == p_rows)
+            assert (t_rows == q_rows)
+            assert (t_cols == 1)
+            assert (p_cols == 3)
+            assert (q_cols == 4)
+
             self.t_vec = t_vec
             self.p_vec = p_vec
             self.q_vec = q_vec
@@ -89,9 +110,6 @@ class Trajectory:
             rpy_vec[i, :] = q.unit().rpy(order='xyz')
 
         return rpy_vec
-
-    def plot(self):
-        assert (False)
 
     def transform(self, scale=1.0, t=np.zeros((3,)), R=np.identity(3)):
         p_es_aligned = np.zeros(np.shape(self.p_vec))
