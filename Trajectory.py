@@ -22,10 +22,11 @@
 
 import os
 import numpy as np
-import numpy_utils.transformations as tf
+from spatialmath import UnitQuaternion, SE3, SO3, Quaternion
 from csv2dataframe.TUMCSV2DataFrame import TUMCSV2DataFrame
 from csv2dataframe.CSV2DataFrame import CSV2DataFrame
 from spatial_csv_formats.CSVFormatPose import CSVFormatPose
+from trajectory.SpatialConverter import SpatialConverter
 
 
 class Trajectory:
@@ -73,15 +74,19 @@ class Trajectory:
             return len(self.t_vec)
 
     def get_distance(self):
-        return Trajectory.get_distance(self.p_vec)
+        if self.p_vec is not None:
+            return Trajectory.distance(self.p_vec)
+        else:
+            return 0
 
     def get_accumulated_distances(self):
-        return Trajectory.get_distances_from_start(self.p_vec)
+        return Trajectory.distances_from_start(self.p_vec)
 
     def get_rpy_vec(self):
         rpy_vec = np.zeros(np.shape(self.p_vec))
         for i in range(np.shape(self.p_vec)[0]):
-            rpy_vec[i, :] = tf.euler_from_quaternion(self.q_vec[i, :], 'rzyx')
+            q = SpatialConverter.HTMQ_quaternion_to_Quaternion(self.q_vec[i, :])
+            rpy_vec[i, :] = q.unit().rpy(order='xyz')
 
         return rpy_vec
 
@@ -91,12 +96,14 @@ class Trajectory:
     def transform(self, scale=1.0, t=np.zeros((3,)), R=np.identity(3)):
         p_es_aligned = np.zeros(np.shape(self.p_vec))
         q_es_aligned = np.zeros(np.shape(self.q_vec))
+
+        T_AB = SpatialConverter.p_R_to_SE3(t, R)
         for i in range(np.shape(self.p_vec)[0]):
-            p_es_aligned[i, :] = R.dot(scale * self.p_vec[i, :]) + t
-            q_es_R = R.dot(tf.quaternion_matrix(self.q_vec[i, :])[0:3, 0:3])
-            q_es_T = np.identity(4)
-            q_es_T[0:3, 0:3] = q_es_R
-            q_es_aligned[i, :] = tf.quaternion_from_matrix(q_es_T)
+            T_BC = SpatialConverter.p_q_HTMQ_to_SE3(scale * self.p_vec[i, :], self.q_vec[i, :])
+            # T_AC = T_AB * T_BC
+            p_AC, q_AC = SpatialConverter.SE3_to_p_q_HTMQ(T_AB * T_BC)
+            q_es_aligned[i, :] = q_AC
+            p_es_aligned[i, :] = p_AC
 
         # self.p_vec = R * (scale * self.p_vec) + t
 
@@ -104,7 +111,7 @@ class Trajectory:
         self.q_vec = q_es_aligned
 
     @staticmethod
-    def get_distances_from_start(p_vec):
+    def distances_from_start(p_vec):
         distances = np.diff(p_vec[:, 0:3], axis=0)
         distances = np.sqrt(np.sum(np.multiply(distances, distances), axis=1))
         distances = np.cumsum(distances)
@@ -112,8 +119,8 @@ class Trajectory:
         return distances
 
     @staticmethod
-    def get_distance(p_vec):
-        accum_distances = Trajectory.get_distances_from_start(p_vec)
+    def distance(p_vec):
+        accum_distances = Trajectory.distances_from_start(p_vec)
         return accum_distances[-1]
 
 
@@ -122,7 +129,7 @@ class Trajectory:
 ########################################################################################################################
 import unittest
 import math
-
+import trajectory as tr
 
 class Trajectory_Test(unittest.TestCase):
     def load_trajectory_from_CSV(self):
@@ -162,14 +169,14 @@ class Trajectory_Test(unittest.TestCase):
                           [2, 0, 0],
                           [3, 0, 0]])
 
-        d = Trajectory.get_distance(p_vec)
+        d = Trajectory.distance(p_vec)
         self.assertTrue(math.floor(d - 3.0) == 0)
 
         p_vec = np.array([[0, 0, 0],
                           [1, 1, 0],
                           [2, 2, 0],
                           [3, 3, 0]])
-        d = Trajectory.get_distance(p_vec)
+        d = Trajectory.distance(p_vec)
         d_ = math.sqrt(9 + 9)
         self.assertTrue(math.floor(d - d_) == 0)
 
@@ -178,7 +185,7 @@ class Trajectory_Test(unittest.TestCase):
                           [2, 2, 2],
                           [3, 3, 3]])
 
-        d = Trajectory.get_distance(p_vec)
+        d = Trajectory.distance(p_vec)
         d_ = math.sqrt(9 + 9 + 9)
         self.assertTrue(math.floor(d - d_) == 0)
 
@@ -187,6 +194,19 @@ class Trajectory_Test(unittest.TestCase):
         rpy_vec = traj.get_rpy_vec()
         self.assertTrue(rpy_vec.shape[0] == traj.num_elems())
         self.assertTrue(rpy_vec.shape[1] == 3)
+
+    def test_transform(self):
+        traj = self.load_trajectory_from_CSV()
+        self.assertTrue(traj.num_elems() > 0)
+        d = traj.get_distance()
+        print('distance: ' + str(d))
+
+        R1 = SO3.RPY([0, 0, 45], unit='deg')
+        p = np.array([1, 2, 3])
+        traj.transform(1, p, R1.R)
+
+        d2 = traj.get_distance()
+        print('distance2:  ' + str(d2))
 
 
 if __name__ == "__main__":
