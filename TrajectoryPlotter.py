@@ -24,6 +24,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # <--- This is important for 3d plotting
 # from mpl_toolkits.mplot3d import Axes3D  # <--- This is important for 3d plotting (copy, if accidentally auto-removed)
+from spatialmath import base, SE3
+
 from csv2dataframe.TUMCSV2DataFrame import TUMCSV2DataFrame
 from trajectory.Trajectory import Trajectory
 from trajectory.TrajectoryEstimated import TrajectoryEstimated
@@ -31,7 +33,7 @@ from trajectory.TrajectoryPlotConfig import TrajectoryPlotConfig
 from trajectory.PlotLineStyle import PlotLineStyle
 from trajectory.TrajectoryPlotTypes import TrajectoryPlotTypes
 from trajectory.pyplot_utils import set_axes_equal
-
+from trajectory.SpatialConverter import SpatialConverter
 
 # TODO: extract some features into dedicated plotting class:
 # PosePlotter
@@ -210,6 +212,24 @@ class TrajectoryPlotter:
         elif cfg.plot_type == TrajectoryPlotTypes.plot_3D:
             ax.plot3D(xs, ys, zs, label=str(label))
 
+    def ax_plot_frames_3D(self, ax, cfg=None, plot_origin=True, origin_name="0", num_markers=0):
+        if cfg is None:
+            cfg = self.config
+
+        if plot_origin and not self.traj_obj.is_empty():
+            T = SE3(self.traj_obj.p_vec[0,0], self.traj_obj.p_vec[0,1], self.traj_obj.p_vec[0,2])
+            base.trplot(T.A, axes=ax, frame=origin_name, rviz=True, length=1, width=0.2, block=False)
+
+        if num_markers > 0 and not self.traj_obj.is_empty():
+            q_vec = self.traj_obj.q_vec
+            p_vec = self.traj_obj.p_vec
+            for i in range(1, self.traj_obj.num_elems(), int(self.traj_obj.num_elems()/num_markers)):
+                T_i = SpatialConverter.p_q_HTMQ_to_SE3(self.traj_obj.p_vec[i, :], self.traj_obj.q_vec[i, :])
+                base.trplot(T_i.A, axes=ax, rviz=True,
+                            length=1, width=0.1, block=False)
+
+
+
     def plot_pose(self, fig=None, cfg=None, angles=False):
         if cfg is None:
             cfg = self.config
@@ -248,16 +268,17 @@ class TrajectoryPlotter:
                 ax.set_title("Plot3D")
 
         self.ax_plot_pos_3D(ax=ax, cfg=cfg)
+        self.ax_plot_frames_3D(ax=ax, cfg=cfg, plot_origin=True, num_markers=10)
 
+        set_axes_equal(ax)
         ax.legend(shadow=True, fontsize='x-small')
         ax.grid(b=True)
         ax.set_xlabel('x')
         ax.set_ylabel('y')
         ax.set_zlabel('z')
         set_axes_equal(ax)
-        ax.view_init(elev=cfg.view_angle[0], azim=cfg.view_angle[1])
-
-        TrajectoryPlotConfig.show_save_figure(cfg, fig)
+        TrajectoryPlotConfig.set_view_angle(cfg=cfg, ax=ax)
+        TrajectoryPlotConfig.show_save_figure(cfg, fig=fig)
 
         return fig, ax
 
@@ -284,6 +305,7 @@ class TrajectoryPlotter:
         ax.set_xlabel('x')
         ax.set_ylabel('y')
         ax.set_zlabel('z')
+        TrajectoryPlotConfig.set_view_angle(cfg=cfg, ax=ax)
         plt.draw()
         plt.pause(0.001)
 
@@ -367,7 +389,8 @@ class TrajectoryPlotter_Test(unittest.TestCase):
     def test_plot_3D(self):
         traj = self.load_trajectory_from_CSV()
 
-        plotter = TrajectoryPlotter(traj_obj=traj, config=TrajectoryPlotConfig(show=False, close_figure=False))
+        plotter = TrajectoryPlotter(traj_obj=traj, config=TrajectoryPlotConfig(show=True, close_figure=False,
+                                                                                       save_fn='./doc/plot_3D.png'))
         plotter.plot_3D()
 
     def test_plot_pose(self):
@@ -389,13 +412,16 @@ class TrajectoryPlotter_Test(unittest.TestCase):
                                      config=TrajectoryPlotConfig(num_points=120000))
         plotter2 = TrajectoryPlotter(traj_obj=self.load_trajectory2_from_CSV())
 
-        TrajectoryPlotter.multi_plot_3D([plotter1, plotter2], cfg=TrajectoryPlotConfig(show=True),
+        TrajectoryPlotter.multi_plot_3D([plotter1, plotter2], cfg=TrajectoryPlotConfig(show=True,
+                                                                                       save_fn='./doc/multi.png',
+                                                                                       view_angle=(40, 20)),
                                         name_list=['gt', 'est'])
 
     def test_plot_estimated_traj(self):
         plotter = TrajectoryPlotter(traj_obj=self.load_trajectory2_from_CSV())
         plotter.plot_pose(angles=True, cfg=TrajectoryPlotConfig(radians=False,
-                                                                plot_type=TrajectoryPlotTypes.plot_2D_over_t))
+                                                                plot_type=TrajectoryPlotTypes.plot_2D_over_t,
+                                                                save_fn='./doc/pose_plot.png'))
         plotter.plot_3D()
         print('done')
 
