@@ -12,6 +12,17 @@ The `TrajectoryPlotter` offers methods to visualize a (or multiple) `Trajectory`
 
 ![class_diagram](./doc/class_diagram.png "folder structure")
 
+
+## Installation
+
+Install the current code base from GitHub and pip install a link to that cloned copy
+```
+git clone https://gitlab.aau.at/aau-cns/py3_pkgs/trajectory.git
+cd trajectory
+pip install -e .
+```
+
+
 ## Dependencies
 
 * [numpy]()
