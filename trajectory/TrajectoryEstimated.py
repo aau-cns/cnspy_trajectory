@@ -16,8 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
-# Requirements:
-# enum
 ########################################################################################################################
 import os
 from trajectory.Trajectory import Trajectory
@@ -68,41 +66,3 @@ class TrajectoryEstimated(Trajectory):
         return True
 
 
-########################################################################################################################
-#################################################### T E S T ###########################################################
-########################################################################################################################
-import unittest
-import time
-
-
-class TrajectoryEstimated_Test(unittest.TestCase):
-    start_time = None
-
-    def start(self):
-        self.start_time = time.time()
-
-    def stop(self):
-        print("Process time: " + str((time.time() - self.start_time)))
-
-    def load_(self):
-        print('loading...')
-        fn = './sample_data/ID1-pose-est-cov.csv'
-        obj = TrajectoryEstimated()
-        obj.load_from_CSV(filename=fn)
-        return obj
-
-    def test_load_trajectory_from_CSV(self):
-        self.start()
-        obj = self.load_()
-        # self.assertTrue(obj.data_loaded)
-        self.stop()
-
-        print(obj.Sigma_p_vec[1000])
-        print(obj.Sigma_p_vec[1000])
-        self.start()
-        obj.save_to_CSV(filename='./results/ID1-pose-est-cov-copy.csv')
-        self.stop()
-
-
-if __name__ == "__main__":
-    unittest.main()
