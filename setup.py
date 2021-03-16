@@ -33,5 +33,5 @@ setup(
     
     packages=find_packages(exclude=["test_*", "TODO*"]),
     python_requires='>=3.6',
-    install_requires=['numpy', 'matplotlib', 'csv2dataframe', 'spatialmath', 'spatial_csv_formats'],
+    install_requires=['numpy', 'matplotlib', 'csv2dataframe', 'spatialmath-python', 'spatial_csv_formats'],
 )
