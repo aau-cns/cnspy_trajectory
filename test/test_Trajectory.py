@@ -17,6 +17,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 ########################################################################################################################
+import os
 import unittest
 import math
 import numpy as np
@@ -24,11 +25,13 @@ from spatialmath import UnitQuaternion, SE3, SO3, Quaternion
 import trajectory as tr
 from trajectory.Trajectory import Trajectory
 
+SAMPLE_DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'sample_data')
+
 class Trajectory_Test(unittest.TestCase):
     def load_trajectory_from_CSV(self):
         print('loading...')
         traj = Trajectory()
-        traj.load_from_CSV(filename='./sample_data/ID1-pose-est.csv')
+        traj.load_from_CSV(filename=str(SAMPLE_DATA_DIR + '/ID1-pose-est.csv'))
         return traj
 
     def test_load_trajectory_from_CSV(self):
@@ -38,7 +41,7 @@ class Trajectory_Test(unittest.TestCase):
     def test_save_to_CSV(self):
         traj = Trajectory()
 
-        saved = traj.save_to_CSV('./results/empty1.csv')
+        saved = traj.save_to_CSV(str(SAMPLE_DATA_DIR + '/results/empty1.csv'))
         self.assertFalse(saved)
 
         traj.p_vec = np.array([[0, 0, 0],
@@ -53,7 +56,7 @@ class Trajectory_Test(unittest.TestCase):
                                [1],
                                [2],
                                [3]])
-        saved = traj.save_to_CSV('./results/empty2.csv')
+        saved = traj.save_to_CSV(str(SAMPLE_DATA_DIR + '/results/empty2.csv'))
         self.assertTrue(saved)
 
     def test_get_distance_from_start(self):

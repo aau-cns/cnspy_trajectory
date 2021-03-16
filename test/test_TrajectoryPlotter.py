@@ -19,20 +19,23 @@
 # Requirements:
 # numpy, matplotlib, csv2dataframe, trajectory
 ########################################################################################################################
+import os
 import unittest
 import math
 from trajectory.TrajectoryPlotter import *
 
+SAMPLE_DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'sample_data')
+
 class TrajectoryPlotter_Test(unittest.TestCase):
     def load_trajectory_from_CSV(self):
         traj = Trajectory()
-        traj.load_from_CSV(filename='./sample_data/ID1-pose-gt.csv')
+        traj.load_from_CSV(filename=str(SAMPLE_DATA_DIR + '/ID1-pose-gt.csv')) 
         self.assertFalse(traj.is_empty())
         return traj
 
     def load_trajectory2_from_CSV(self):
         traj = TrajectoryEstimated()
-        traj.load_from_CSV(filename='./sample_data/ID1-pose-est-cov.csv')
+        traj.load_from_CSV(filename=str(SAMPLE_DATA_DIR + '/ID1-pose-est-cov.csv'))
         self.assertFalse(traj.is_empty())
         return traj
 
@@ -40,7 +43,7 @@ class TrajectoryPlotter_Test(unittest.TestCase):
         traj = self.load_trajectory_from_CSV()
 
         plotter = TrajectoryPlotter(traj_obj=traj, config=TrajectoryPlotConfig(show=True, close_figure=False,
-                                                                                       save_fn='./doc/plot_3D.png'))
+                                                                                       save_fn=str(SAMPLE_DATA_DIR + '/../../doc/plot_3D.png')))
         plotter.plot_3D()
 
     def test_plot_pose(self):
@@ -63,7 +66,7 @@ class TrajectoryPlotter_Test(unittest.TestCase):
         plotter2 = TrajectoryPlotter(traj_obj=self.load_trajectory2_from_CSV())
 
         TrajectoryPlotter.multi_plot_3D([plotter1, plotter2], cfg=TrajectoryPlotConfig(show=True,
-                                                                                       save_fn='./doc/multi.png',
+                                                                                       save_fn=str(SAMPLE_DATA_DIR + '/../../doc/multi.png'),
                                                                                        view_angle=(40, 20)),
                                         name_list=['gt', 'est'])
 
@@ -71,7 +74,7 @@ class TrajectoryPlotter_Test(unittest.TestCase):
         plotter = TrajectoryPlotter(traj_obj=self.load_trajectory2_from_CSV())
         plotter.plot_pose(angles=True, cfg=TrajectoryPlotConfig(radians=False,
                                                                 plot_type=TrajectoryPlotTypes.plot_2D_over_t,
-                                                                save_fn='./doc/pose_plot.png'))
+                                                                save_fn=str(SAMPLE_DATA_DIR + '/../../doc/pose_plot.png')))
         plotter.plot_3D()
         print('done')
 
