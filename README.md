@@ -1,6 +1,6 @@
 # The cnspy_trajectory Package
 
-A [Trajectory](Trajectory.py) object consists of a matrix of positions, orientations (Quaternions) and associated timestamps.
+A [Trajectory](./cnspy_trajectory/Trajectory.py) object consists of a matrix of positions, orientations (Quaternions) and associated timestamps.
 The object can be created by passing the these three matrices or by passing a `Pandas` `DataFrame` object containing them. 
 The `DataFrame` will be converted using the class `TUMCSV2DataFrame`.
 
