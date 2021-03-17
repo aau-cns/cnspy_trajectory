@@ -20,8 +20,8 @@
 # enum
 ########################################################################################################################
 import os
-from trajectory.Trajectory import Trajectory
-from trajectory.TrajectoryEstimated import TrajectoryEstimated
+from cnspy_trajectory.Trajectory import Trajectory
+from cnspy_trajectory.TrajectoryEstimated import TrajectoryEstimated
 import unittest
 import time
 

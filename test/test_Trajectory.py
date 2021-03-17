@@ -22,8 +22,8 @@ import unittest
 import math
 import numpy as np
 from spatialmath import UnitQuaternion, SE3, SO3, Quaternion
-import trajectory as tr
-from trajectory.Trajectory import Trajectory
+import cnspy_trajectory as tr
+from cnspy_trajectory.Trajectory import Trajectory
 
 SAMPLE_DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'sample_data')
 

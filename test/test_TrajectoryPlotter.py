@@ -17,12 +17,12 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Requirements:
-# numpy, matplotlib, csv2dataframe, trajectory
+# numpy, matplotlib, cnspy_csv2dataframe, cnspy_trajectory
 ########################################################################################################################
 import os
 import unittest
 import math
-from trajectory.TrajectoryPlotter import *
+from cnspy_trajectory.TrajectoryPlotter import *
 
 SAMPLE_DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'sample_data')
 

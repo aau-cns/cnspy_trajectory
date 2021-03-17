@@ -1,4 +1,4 @@
-# The "trajectory" Package
+# The cnspy_trajectory Package
 
 A [Trajectory](Trajectory.py) object consists of a matrix of positions, orientations (Quaternions) and associated timestamps.
 The object can be created by passing the these three matrices or by passing a `Pandas` `DataFrame` object containing them. 
@@ -17,8 +17,8 @@ The `TrajectoryPlotter` offers methods to visualize a (or multiple) `Trajectory`
 
 Install the current code base from GitHub and pip install a link to that cloned copy
 ```
-git clone https://gitlab.aau.at/aau-cns/py3_pkgs/trajectory.git
-cd trajectory
+git clone https://gitlab.aau.at/aau-cns/py3_pkgs/cnspy_trajectory.git
+cd cnspy_trajectory
 pip install -e .
 ```
 
@@ -29,10 +29,10 @@ pip install -e .
 * [matplotlib]()
 * [pandas]()
 * [scipy]()
-* [numpy_utils]()
-* [trajectory]()
-* [csv2dataframe]()
-* [ros_csv_formats]()
+* [cnspy_numpy_utils]()
+* [cnspy_trajectory]()
+* [cnspy_csv2dataframe]()
+* [cnspy_spatial_csv_formats]()
 * [matplotlib.pyplot]()
 
 

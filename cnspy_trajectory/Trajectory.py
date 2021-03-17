@@ -23,10 +23,10 @@
 import os
 import numpy as np
 from spatialmath import UnitQuaternion, SE3, SO3, Quaternion
-from csv2dataframe.TUMCSV2DataFrame import TUMCSV2DataFrame
-from csv2dataframe.CSV2DataFrame import CSV2DataFrame
-from spatial_csv_formats.CSVFormatPose import CSVFormatPose
-from trajectory.SpatialConverter import SpatialConverter
+from cnspy_csv2dataframe.TUMCSV2DataFrame import TUMCSV2DataFrame
+from cnspy_csv2dataframe.CSV2DataFrame import CSV2DataFrame
+from cnspy_spatial_csv_formats.CSVFormatPose import CSVFormatPose
+from cnspy_trajectory.SpatialConverter import SpatialConverter
 
 
 class Trajectory:

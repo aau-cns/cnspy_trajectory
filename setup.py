@@ -14,18 +14,20 @@ with open(path.join(here, 'RELEASE'), encoding='utf-8') as f:
     release = f.read()
 
 setup(
-    name='trajectory',
+    name='cnspy_trajectory',
     version=release,
     author='Roland Jung',
     author_email='roland.jung@aau.at',    
     description='Trajectory in SE(3) space with utilities.',
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url='https://gitlab.aau.at/aau-cns/py3_pkgs/trajectory/',
+    url='https://gitlab.aau.at/aau-cns/py3_pkgs/cnspy_trajectory/',
     project_urls={
-        "Bug Tracker": "https://gitlab.aau.at/aau-cns/py3_pkgs/trajectory/issues",
+        "Bug Tracker": "https://gitlab.aau.at/aau-cns/py3_pkgs/cnspy_trajectory/issues",
     },    
     classifiers=[
+        'Development Status :: 4 - Beta',
+        'Intended Audience :: Developers',
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Operating System :: OS Independent",
@@ -33,5 +35,5 @@ setup(
     
     packages=find_packages(exclude=["test_*", "TODO*"]),
     python_requires='>=3.6',
-    install_requires=['numpy', 'matplotlib', 'csv2dataframe', 'spatialmath-python', 'spatial_csv_formats'],
+    install_requires=['numpy', 'matplotlib', 'cnspy_csv2dataframe', 'spatialmath-python', 'cnspy_spatial_csv_formats'],
 )

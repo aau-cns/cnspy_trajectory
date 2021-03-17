@@ -21,7 +21,7 @@
 ########################################################################################################################
 import os
 import matplotlib.pyplot as plt
-from trajectory.TrajectoryPlotTypes import TrajectoryPlotTypes
+from cnspy_trajectory.TrajectoryPlotTypes import TrajectoryPlotTypes
 
 
 # https://matplotlib.org/2.1.2/api/_as_gen/matplotlib.pyplot.plot.html

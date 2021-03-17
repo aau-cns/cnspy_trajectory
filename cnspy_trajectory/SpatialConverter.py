@@ -20,7 +20,7 @@
 # * https://github.com/uzh-rpg/rpg_trajectory_evaluation/blob/master/src/rpg_trajectory_evaluation/align_trajectory.py
 #
 # Requirements:
-# numpy, numpy_utils
+# numpy, cnspy_numpy_utils
 ########################################################################################################################
 import numpy as np
 from spatialmath import UnitQuaternion, SO3, SE3, Quaternion, base

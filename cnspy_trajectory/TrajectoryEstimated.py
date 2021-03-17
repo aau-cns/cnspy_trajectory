@@ -18,10 +18,10 @@
 #
 ########################################################################################################################
 import os
-from trajectory.Trajectory import Trajectory
-from csv2dataframe.PoseWithCov2DataFrame import PoseWithCov2DataFrame
-from csv2dataframe.CSV2DataFrame import CSV2DataFrame
-from spatial_csv_formats.CSVFormatPose import CSVFormatPose
+from cnspy_trajectory.Trajectory import Trajectory
+from cnspy_csv2dataframe.PoseWithCov2DataFrame import PoseWithCov2DataFrame
+from cnspy_csv2dataframe.CSV2DataFrame import CSV2DataFrame
+from cnspy_spatial_csv_formats.CSVFormatPose import CSVFormatPose
 
 
 class TrajectoryEstimated(Trajectory):

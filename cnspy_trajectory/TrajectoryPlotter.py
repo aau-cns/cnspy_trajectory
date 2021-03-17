@@ -17,7 +17,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Requirements:
-# numpy, matplotlib, csv2dataframe, trajectory
+# numpy, matplotlib, cnspy_csv2dataframe, cnspy_trajectory
 ########################################################################################################################
 import os
 import numpy as np
@@ -27,14 +27,14 @@ from mpl_toolkits.mplot3d import Axes3D  # <--- This is important for 3d plottin
 # from mpl_toolkits.mplot3d import Axes3D  # <--- This is important for 3d plotting (copy, if accidentally auto-removed)
 from spatialmath import base, SE3
 
-from csv2dataframe.TUMCSV2DataFrame import TUMCSV2DataFrame
-from trajectory.Trajectory import Trajectory
-from trajectory.TrajectoryEstimated import TrajectoryEstimated
-from trajectory.TrajectoryPlotConfig import TrajectoryPlotConfig
-from trajectory.PlotLineStyle import PlotLineStyle
-from trajectory.TrajectoryPlotTypes import TrajectoryPlotTypes
-from trajectory.pyplot_utils import set_axes_equal
-from trajectory.SpatialConverter import SpatialConverter
+from cnspy_csv2dataframe.TUMCSV2DataFrame import TUMCSV2DataFrame
+from cnspy_trajectory.Trajectory import Trajectory
+from cnspy_trajectory.TrajectoryEstimated import TrajectoryEstimated
+from cnspy_trajectory.TrajectoryPlotConfig import TrajectoryPlotConfig
+from cnspy_trajectory.PlotLineStyle import PlotLineStyle
+from cnspy_trajectory.TrajectoryPlotTypes import TrajectoryPlotTypes
+from cnspy_trajectory.pyplot_utils import set_axes_equal
+from cnspy_trajectory.SpatialConverter import SpatialConverter
 
 # TODO: extract some features into dedicated plotting class:
 # PosePlotter
@@ -51,7 +51,7 @@ class TrajectoryPlotter:
 
     def __init__(self, traj_obj, config=TrajectoryPlotConfig()):
         if config.num_points > 0:
-            # subsample trajectory first:
+            # subsample cnspy_trajectory first:
             df = traj_obj.to_DataFrame()
             self.traj_df = TUMCSV2DataFrame.subsample_DataFrame(df, num_max_points=config.num_points)
             self.traj_obj = Trajectory(df=self.traj_df)
@@ -202,7 +202,7 @@ class TrajectoryPlotter:
         TrajectoryPlotter.ax_plot_n_dim(ax, x_linespace, q_vec, colors=colors,
                                         labels=labels)
 
-    def ax_plot_pos_3D(self, ax, cfg=None, label="trajectory"):
+    def ax_plot_pos_3D(self, ax, cfg=None, label="cnspy_trajectory"):
         if cfg is None:
             cfg = self.config
 
