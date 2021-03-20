@@ -17,22 +17,23 @@ The `TrajectoryPlotter` offers methods to visualize a (or multiple) `Trajectory`
 
 Install the current code base from GitHub and pip install a link to that cloned copy
 ```
-git clone https://gitlab.aau.at/aau-cns/py3_pkgs/cnspy_trajectory.git
+git clone https://github.com/aau-cns/cnspy_trajectory.git
 cd cnspy_trajectory
 pip install -e .
 ```
 
-
 ## Dependencies
+
+It is part of the [cnspy eco-system](hhttps://github.com/aau-cns/cnspy_eco_system_test) of the [cns-github](https://github.com/aau-cns) group.  
 
 * [numpy]()
 * [matplotlib]()
 * [pandas]()
 * [scipy]()
-* [cnspy_numpy_utils]()
-* [cnspy_trajectory]()
-* [cnspy_csv2dataframe]()
-* [cnspy_spatial_csv_formats]()
+* [cnspy_numpy_utils](https://github.com/aau-cns/cnspy_numpy_utils)
+* [cnspy_csv2dataframe](https://github.com/aau-cns/cnspy_csv2dataframe)
+* [cnspy_spatial_csv_formats](https://github.com/aau-cns/cnspy_spatial_csv_formats)
+* [cnspy_trajectory](https://github.com/aau-cns/cnspy_trajectory)  
 * [matplotlib.pyplot]()
 
 
