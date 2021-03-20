@@ -21,6 +21,11 @@ git clone https://github.com/aau-cns/cnspy_trajectory.git
 cd cnspy_trajectory
 pip install -e .
 ```
+or the [official package](https://pypi.org/project/cnspy-trajectory/) via
+```commandline
+pip install cnspy-trajectory
+```
+
 
 ## Dependencies
 
