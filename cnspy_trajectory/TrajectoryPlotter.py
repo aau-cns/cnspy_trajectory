@@ -122,13 +122,14 @@ class TrajectoryPlotter:
             print("clear ys")
 
         if not (len(rs) and isinstance(rs[0], np.float64) and not math.isnan(rs[0])):
-            xs = []
+            rs = []
         if not (len(ps) and isinstance(ps[0], np.float64) and not math.isnan(ps[0])):
             ps = []
         if not (len(ys) and isinstance(ys[0], np.float64) and not math.isnan(ys[0])):
             ys = []
 
         return ts, rs, ps, ys, dist_vec
+
 
     @staticmethod
     def ax_plot_n_dim(ax, x_linespace, values,
@@ -315,7 +316,7 @@ class TrajectoryPlotter:
         return fig, ax
 
     @staticmethod
-    def plot_pose_err(plotter_est, plotter_err, fig=None, cfg=None, angles=False, plotter_gt=None):
+    def plot_pose_err(plotter_est, plotter_err, fig=None, cfg=None, angles=False, plotter_gt=None, local_p_err=True, local_R_err=True):
         assert(isinstance(plotter_err, TrajectoryPlotter))
         assert(isinstance(plotter_est, TrajectoryPlotter))
 
@@ -325,18 +326,29 @@ class TrajectoryPlotter:
         if fig is None:
             fig = plt.figure(figsize=(20, 15), dpi=int(cfg.dpi))
 
+        # create 2x2 grid
         ax1 = fig.add_subplot(221)
         ax2 = fig.add_subplot(222)
         ax3 = fig.add_subplot(223)
         ax4 = fig.add_subplot(224)
+
+        # Error type text:
+        text_p_err = 'local '
+        if not local_p_err:
+            text_p_err = 'global '
+        # Error type text:
+        text_R_err = 'local '
+        if not local_R_err:
+            text_R_err = 'global '
 
         plotter_est.ax_plot_pos(ax=ax1, cfg=cfg)
         if plotter_gt:
             plotter_gt.ax_plot_pos(ax=ax1, cfg=cfg, colors=['k', 'k', 'k'], labels=['gt_x', 'gt_y', 'gt_z'],
                                    ls=PlotLineStyle(linestyle='-.', linewidth=0.5))
         plotter_err.ax_plot_pos(ax=ax2, cfg=cfg)
+
         ax1.set_ylabel('position est [m]')
-        ax2.set_ylabel('position err [m]')
+        ax2.set_ylabel(text_p_err + 'position err [m]')
 
         if angles:
             plotter_est.ax_plot_rpy(ax=ax3, cfg=cfg)
@@ -344,24 +356,25 @@ class TrajectoryPlotter:
                 plotter_gt.ax_plot_rpy(ax=ax3, cfg=cfg, colors=['k', 'k', 'k'],
                                        ls=PlotLineStyle(linestyle='-.', linewidth=0.5))
             plotter_err.ax_plot_rpy(ax=ax4, cfg=cfg)
+
             if cfg.radians:
                 ax3.set_ylabel('rotation est [rad]')
-                ax4.set_ylabel('rotation err [rad]')
+                ax4.set_ylabel(text_R_err + 'rotation err [rad]')
             else:
                 ax3.set_ylabel('rotation est [deg]')
-                ax4.set_ylabel('rotation err [deg]')
+                ax4.set_ylabel(text_R_err + 'rotation err [deg]')
         else:
             plotter_est.ax_plot_q(ax=ax3, cfg=cfg)
             if plotter_gt:
                 plotter_gt.ax_plot_q(ax=ax3, cfg=cfg, colors=['k', 'k', 'k', 'k'],
                                      ls=PlotLineStyle(linestyle='-.', linewidth=0.5))
             plotter_err.ax_plot_q(ax=ax4, cfg=cfg)
-            ax4.set_ylabel('quaternion err')
+            ax4.set_ylabel(text_R_err + 'quaternion err')
 
-        ax1.grid(b=True)
-        ax2.grid(b=True)
-        ax3.grid(b=True)
-        ax4.grid(b=True)
+        ax1.grid(visible=True)
+        ax2.grid(visible=True)
+        ax3.grid(visible=True)
+        ax4.grid(visible=True)
         TrajectoryPlotConfig.show_save_figure(cfg, fig)
 
         return fig, ax1, ax2, ax3, ax4
