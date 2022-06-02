@@ -32,8 +32,8 @@ class SpatialConverter:
     Homogeneous Transformation Matrices and Quaternions (HTMQ) by `Christoph Gohlke <http://www.lfd.uci.edu/~gohlke/>`__,
       Laboratory for Fluorescence Dynamics, University of California, Irvine (https://pypi.org/project/transformations/)
 
-    Problem: the quaternion format is non-alphabetic: [x,y,z,w], with w being the scalar part and [x,y,z] the imaginary
-    The spatialmath toolbox (https://github.com/petercorke/spatialmath-python) uses [s, v], s = scalar/real part and v = vector/imaginary part
+    Problem: the HTMQ quaternion format is non-alphabetic: [x,y,z,w], with w being the scalar part and [x,y,z] the imaginary
+    The spatialmath toolbox (https://github.com/petercorke/spatialmath-python) uses [s, v] ([w, x, y, z]), s = scalar/real part and v = vector/imaginary part
 
     In general this convert is required from a historical point, as the spatialmath toolbox is pretty new and would
     require to refactor the whole code base (the [x,y,z,w] format is widely used!)
@@ -57,20 +57,19 @@ class SpatialConverter:
         if not (isinstance(q_AB, np.ndarray) and len(q_AB) == 4):
             raise ValueError('Invalid input')
         indices = [3, 0, 1, 2]
-        return Quaternion(q_AB[indices])
+        return UnitQuaternion(q_AB[indices])
 
     @staticmethod
     def SO3_to_HTMQ_quaternion(R_AB):
+        # returns a np.array representing a unit-quaternion [x,y,z, w], [[v], s];
         # Convert SO(3) rotation matrix to unit-quaternion
         if isinstance(R_AB, SO3):
-            q_AB_ = base.r2q(R_AB.R)
+            return base.r2q(R_AB.R, order="xyzs")
         elif base.isrot(R_AB, check=False):
-            q_AB_ = base.r2q(R_AB)
+            return base.r2q(R_AB, order="xyzs")
         else:
             raise ValueError('Invalid type')
 
-        indices_inv = [1, 2, 3, 0]
-        return q_AB_[indices_inv]
 
 
     @staticmethod
