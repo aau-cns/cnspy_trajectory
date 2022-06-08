@@ -37,12 +37,13 @@ from cnspy_trajectory.pyplot_utils import set_axes_equal
 from cnspy_trajectory.SpatialConverter import SpatialConverter
 
 # TODO: extract some features into dedicated plotting class:
-# PosePlotter
-#  - ax_plot_n_dim, ax_plot_pos/rpq/q, ax_plot_pos_3D,
-#  - plot_pose
-#  - show_save_figure
-#  - plot 3 sigma bounds
-#  - legend show ARMSE
+# TODOs PosePlotter:
+#  - TODO: ax_plot_n_dim, ax_plot_pos/rpq/q, ax_plot_pos_3D,
+#  - TODO: plot_pose
+#  - TODO: show_save_figure
+#  - TODO: plot 3 sigma bounds
+#  - TODO: legend show ARMSE
+
 
 class TrajectoryPlotter:
     traj_obj = None
@@ -62,6 +63,11 @@ class TrajectoryPlotter:
         self.config = config
 
     def get_pos_data(self, cfg):
+        if cfg is None:
+            cfg = self.config
+        else:
+            assert (isinstance(cfg, TrajectoryPlotConfig))
+
         data_dict = TUMCSV2DataFrame.DataFrame_to_numpy_dict(self.traj_df)
         ts = data_dict['t']
         xs = data_dict['tx']
@@ -96,7 +102,12 @@ class TrajectoryPlotter:
 
         return ts, xs, ys, zs, dist_vec
 
-    def get_rpy_data(self, cfg):
+    def get_rpy_data(self, cfg=None):
+        if cfg is None:
+            cfg = self.config
+        else:
+            assert (isinstance(cfg, TrajectoryPlotConfig))
+
         rpy_vec = self.traj_obj.get_rpy_vec()
 
         rpy_vec = np.unwrap(rpy_vec, axis=0)
@@ -130,7 +141,6 @@ class TrajectoryPlotter:
 
         return ts, rs, ps, ys, dist_vec
 
-
     @staticmethod
     def ax_plot_n_dim(ax, x_linespace, values,
                       colors=['r', 'g', 'b'],
@@ -146,8 +156,12 @@ class TrajectoryPlotter:
             ax.plot(x_linespace, values, color=colors[0], label=labels[0], linestyle=ls.linestyle,
                     linewidth=ls.linewidth)
 
-    def ax_plot_pos(self, ax, cfg, colors=['r', 'g', 'b'], labels=['x', 'y', 'z'], ls=PlotLineStyle()):
+    def ax_plot_pos(self, ax, cfg=None, colors=['r', 'g', 'b'], labels=['x', 'y', 'z'], ls=PlotLineStyle()):
         ts, xs, ys, zs, dist_vec = self.get_pos_data(cfg)
+        if cfg is None:
+            cfg = self.config
+        else:
+            assert (isinstance(cfg, TrajectoryPlotConfig))
 
         if cfg.plot_type == TrajectoryPlotTypes.plot_2D_over_dist:
             linespace = dist_vec
@@ -165,8 +179,12 @@ class TrajectoryPlotter:
         if len(zs):
             TrajectoryPlotter.ax_plot_n_dim(ax, linespace, zs, colors=[colors[2]], labels=[labels[2]], ls=ls)
 
-    def ax_plot_rpy(self, ax, cfg, colors=['r', 'g', 'b'], labels=['x', 'y', 'z'], ls=PlotLineStyle()):
+    def ax_plot_rpy(self, ax, cfg=None, colors=['r', 'g', 'b'], labels=['x', 'y', 'z'], ls=PlotLineStyle()):
         ts, xs, ys, zs, dist_vec = self.get_rpy_data(cfg)
+        if cfg is None:
+            cfg = self.config
+        else:
+            assert (isinstance(cfg, TrajectoryPlotConfig))
 
         if cfg.plot_type == TrajectoryPlotTypes.plot_2D_over_dist:
             linespace = dist_vec
@@ -188,8 +206,13 @@ class TrajectoryPlotter:
         if len(zs):
             TrajectoryPlotter.ax_plot_n_dim(ax, linespace, zs, colors=[colors[2]], labels=[labels[2]], ls=ls)
 
-    def ax_plot_q(self, ax, cfg, colors=['r', 'g', 'b', 'k'],
+    def ax_plot_q(self, ax, cfg=None, colors=['r', 'g', 'b', 'k'],
                   labels=['qx', 'qy', 'qz', 'qw'], ls=PlotLineStyle()):
+        if cfg is None:
+            cfg = self.config
+        else:
+            assert (isinstance(cfg, TrajectoryPlotConfig))
+
         q_vec = self.traj_obj.q_vec
         if cfg.plot_type == TrajectoryPlotTypes.plot_2D_over_dist:
             x_linespace = self.traj_obj.get_accumulated_distances()
@@ -203,9 +226,38 @@ class TrajectoryPlotter:
         TrajectoryPlotter.ax_plot_n_dim(ax, x_linespace, q_vec, colors=colors,
                                         labels=labels)
 
+    def ax_plot_angle(self, ax, cfg=None, colors=['r'],
+                  labels=['phi'], ls=PlotLineStyle()):
+        if cfg is None:
+            cfg = self.config
+        else:
+            assert (isinstance(cfg, TrajectoryPlotConfig))
+
+        if cfg.plot_type == TrajectoryPlotTypes.plot_2D_over_dist:
+            x_linespace = self.traj_obj.get_accumulated_distances()
+            ax.set_xlabel('distance [m]')
+        else:
+            x_linespace = self.traj_obj.t_vec
+            x_linespace = x_linespace - x_linespace[0]
+            ax.set_xlabel('rel. time [sec]')
+
+        unit = 'deg'
+        if cfg.radians:
+            ax.set_ylabel('angle [rad]')
+            unit='rad'
+        else:
+            ax.set_ylabel('angle [deg]')
+
+        phi_vec, axis_vec = self.traj_obj.get_angle_axis_vec(unit=unit)
+
+        TrajectoryPlotter.ax_plot_n_dim(ax, x_linespace, phi_vec, colors=colors,
+                                        labels=labels)
+
     def ax_plot_pos_3D(self, ax, cfg=None, label="cnspy_trajectory"):
         if cfg is None:
             cfg = self.config
+        else:
+            assert (isinstance(cfg, TrajectoryPlotConfig))
 
         ts, xs, ys, zs, dist_vec = self.get_pos_data(cfg)
 
@@ -217,6 +269,8 @@ class TrajectoryPlotter:
     def ax_plot_frames_3D(self, ax, cfg=None, plot_origin=True, origin_name="0", num_markers=0):
         if cfg is None:
             cfg = self.config
+        else:
+            assert (isinstance(cfg, TrajectoryPlotConfig))
 
         if plot_origin and not self.traj_obj.is_empty():
             T = SE3(self.traj_obj.p_vec[0,0], self.traj_obj.p_vec[0,1], self.traj_obj.p_vec[0,2])
@@ -229,12 +283,13 @@ class TrajectoryPlotter:
                 T_i = SpatialConverter.p_q_HTMQ_to_SE3(self.traj_obj.p_vec[i, :], self.traj_obj.q_vec[i, :])
                 base.trplot(T_i.A, axes=ax, rviz=True,
                             length=1, width=0.1, block=False)
+        pass
 
-
-
-    def plot_pose(self, fig=None, cfg=None, angles=False):
+    def plot_pose(self, fig=None, cfg=None, angles=False, plot_angle=False):
         if cfg is None:
             cfg = self.config
+        else:
+            assert (isinstance(cfg, TrajectoryPlotConfig))
 
         if fig is None:
             fig = plt.figure(figsize=(20, 15), dpi=int(cfg.dpi))
@@ -243,10 +298,13 @@ class TrajectoryPlotter:
         self.ax_plot_pos(ax=ax1, cfg=cfg)
         ax2 = fig.add_subplot(212)
 
-        if angles:
-            self.ax_plot_rpy(ax=ax2, cfg=cfg)
+        if plot_angle:
+            self.ax_plot_angle(ax=ax2, cfg=cfg)
         else:
-            self.ax_plot_q(ax=ax2, cfg=cfg)
+            if angles:
+                self.ax_plot_rpy(ax=ax2, cfg=cfg)
+            else:
+                self.ax_plot_q(ax=ax2, cfg=cfg)
 
         TrajectoryPlotConfig.show_save_figure(cfg, fig)
         return fig, ax1, ax2
@@ -254,6 +312,8 @@ class TrajectoryPlotter:
     def plot_3D(self, fig=None, ax=None, cfg=None):
         if cfg is None:
             cfg = self.config
+        else:
+            assert (isinstance(cfg, TrajectoryPlotConfig))
 
         if fig is None:
             fig = plt.figure(figsize=(20, 15), dpi=int(cfg.dpi))
@@ -286,7 +346,7 @@ class TrajectoryPlotter:
 
     @staticmethod
     def multi_plot_3D(traj_plotter_list, cfg, name_list=[]):
-
+        assert (isinstance(cfg, TrajectoryPlotConfig))
         num_plots = len(traj_plotter_list)
 
         fig = plt.figure(figsize=(20, 15), dpi=int(cfg.dpi))
@@ -316,12 +376,15 @@ class TrajectoryPlotter:
         return fig, ax
 
     @staticmethod
-    def plot_pose_err(plotter_est, plotter_err, fig=None, cfg=None, angles=False, plotter_gt=None, local_p_err=True, local_R_err=True):
+    def plot_pose_err(plotter_est, plotter_err, fig=None, cfg=None, angles=False, plotter_gt=None, local_p_err=True,
+                      local_R_err=True):
         assert(isinstance(plotter_err, TrajectoryPlotter))
         assert(isinstance(plotter_est, TrajectoryPlotter))
 
         if cfg is None:
             cfg = plotter_est.config
+        else:
+            assert (isinstance(cfg, TrajectoryPlotConfig))
 
         if fig is None:
             fig = plt.figure(figsize=(20, 15), dpi=int(cfg.dpi))
@@ -355,7 +418,8 @@ class TrajectoryPlotter:
             if plotter_gt:
                 plotter_gt.ax_plot_rpy(ax=ax3, cfg=cfg, colors=['k', 'k', 'k'],
                                        ls=PlotLineStyle(linestyle='-.', linewidth=0.5))
-            plotter_err.ax_plot_rpy(ax=ax4, cfg=cfg)
+
+            plotter_err.ax_plot_angle(ax=ax4, cfg=cfg)
 
             if cfg.radians:
                 ax3.set_ylabel('rotation est [rad]')
