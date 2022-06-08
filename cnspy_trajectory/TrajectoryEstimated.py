@@ -22,7 +22,7 @@ import os
 import pandas
 from enum import Enum
 from cnspy_trajectory.Trajectory import Trajectory
-from cnspy_csv2dataframe.PoseWithCov2DataFrame import PoseWithCov2DataFrame
+from cnspy_csv2dataframe.PosOrientWithCov2DataFrame import PosOrientWithCov2DataFrame
 from cnspy_csv2dataframe.CSV2DataFrame import CSV2DataFrame
 from cnspy_spatial_csv_formats.CSVFormatPose import CSVFormatPose
 from cnspy_trajectory.EstimationErrorType import EstimationErrorType
@@ -83,17 +83,17 @@ class TrajectoryEstimated(Trajectory):
     def load_from_DataFrame(self, df):
         assert (isinstance(df, pandas.DataFrame))
         self.t_vec, self.p_vec, self.q_vec, self.Sigma_p_vec, \
-            self.Sigma_q_vec = PoseWithCov2DataFrame.DataFrame_to_TPQCov(data_frame=df)
+            self.Sigma_q_vec = PosOrientWithCov2DataFrame.DataFrame_to_TPQCov(data_frame=df)
 
     def to_DataFrame(self):
-        return PoseWithCov2DataFrame.TPQCov_to_DataFrame(self.t_vec, self.p_vec, self.q_vec, self.Sigma_p_vec,
-                                                         self.Sigma_q_vec)
+        return PosOrientWithCov2DataFrame.TPQCov_to_DataFrame(self.t_vec, self.p_vec, self.q_vec, self.Sigma_p_vec,
+                                                              self.Sigma_q_vec)
 
     def save_to_CSV(self, filename):
         if self.is_empty():
             return False
         df = self.to_DataFrame()
-        CSV2DataFrame.save_CSV(df, filename=filename, fmt=CSVFormatPose.PoseWithCov)
+        CSV2DataFrame.save_CSV(df, filename=filename, fmt=CSVFormatPose.PosOrientWithCov)
         return True
 
 
