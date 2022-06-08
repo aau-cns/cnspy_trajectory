@@ -111,6 +111,17 @@ class Trajectory:
 
         return rpy_vec
 
+    def get_angle_axis_vec(self, unit='rad'):
+        phi_vec = np.zeros([np.shape(self.p_vec)[0], 1])
+        axis_vec = np.zeros([np.shape(self.p_vec)[0], 3])
+        for i in range(np.shape(self.p_vec)[0]):
+            q = SpatialConverter.HTMQ_quaternion_to_Quaternion(self.q_vec[i, :])
+            phi, u_vec = q.angvec(unit=unit)
+            phi_vec[i, :] = phi
+            axis_vec[i, :] = u_vec
+
+        return phi_vec, axis_vec
+
     def transform(self, scale=1.0, t=np.zeros((3,)), R=np.identity(3)):
         p_es_aligned = np.zeros(np.shape(self.p_vec))
         q_es_aligned = np.zeros(np.shape(self.q_vec))
