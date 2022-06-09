@@ -20,13 +20,12 @@
 import os
 
 import pandas
-from enum import Enum
 from cnspy_trajectory.Trajectory import Trajectory
 from cnspy_csv2dataframe.PosOrientWithCov2DataFrame import PosOrientWithCov2DataFrame
 from cnspy_csv2dataframe.CSV2DataFrame import CSV2DataFrame
 from cnspy_spatial_csv_formats.CSVFormatPose import CSVFormatPose
-from cnspy_trajectory.EstimationErrorType import EstimationErrorType
-from cnspy_trajectory.RotationErrorRepresentationType import RotationErrorRepresentationType
+from cnspy_spatial_csv_formats.EstimationErrorType import EstimationErrorType
+from cnspy_spatial_csv_formats.RotationErrorRepresentationType import RotationErrorRepresentationType
 
 
 
