@@ -24,9 +24,9 @@ from cnspy_trajectory.Trajectory import Trajectory
 from cnspy_csv2dataframe.PosOrientWithCov2DataFrame import PosOrientWithCov2DataFrame
 from cnspy_csv2dataframe.CSV2DataFrame import CSV2DataFrame
 from cnspy_spatial_csv_formats.CSVSpatialFormatType import CSVSpatialFormatType
+from cnspy_spatial_csv_formats.CSVSpatialFormat import CSVSpatialFormat
 from cnspy_spatial_csv_formats.EstimationErrorType import EstimationErrorType
-from cnspy_spatial_csv_formats.RotationErrorRepresentationType import RotationErrorRepresentationType
-
+from cnspy_spatial_csv_formats.ErrorRepresentationType import ErrorRepresentationType
 
 
 class TrajectoryEstimated(Trajectory):
@@ -50,13 +50,13 @@ class TrajectoryEstimated(Trajectory):
     #global_q_uncertainty = False
 
     # specifies the uncertainty of the rotation (Sigma_q_vec)
-    rot_err_representation = RotationErrorRepresentationType.R_small_theta
+    error_representation = ErrorRepresentationType.R_small_theta
     # specifies global or local definitions of the uncertainty (Sigma_p/q_vec)
     estimation_error_type = EstimationErrorType.type5
 
     def __init__(self, t_vec=None, p_vec=None, q_vec=None, Sigma_p_vec=None, Sigma_q_vec=None, df=None,
-                 rot_err_representation=RotationErrorRepresentationType.R_small_theta,
-                 estimation_error_type=EstimationErrorType.type1):
+                 rot_err_representation=ErrorRepresentationType.R_small_theta,
+                 estimation_error_type=EstimationErrorType.type1, fmt=None):
         Trajectory.__init__(self, t_vec=t_vec, p_vec=p_vec, q_vec=q_vec)
         self.Sigma_p_vec = Sigma_p_vec
         self.Sigma_q_vec = Sigma_q_vec
@@ -65,10 +65,22 @@ class TrajectoryEstimated(Trajectory):
             self.load_from_DataFrame(df)
 
         if rot_err_representation is not None:
-            self.rot_err_representation = rot_err_representation
+            self.error_representation = rot_err_representation
 
         if estimation_error_type is not None:
             self.estimation_error_type = estimation_error_type
+        if fmt is not None:
+            self.set_format(fmt)
+
+    def set_format(self, fmt):
+        if fmt is not None and isinstance(fmt, CSVSpatialFormat):
+            self.estimation_error_type = fmt.estimation_error_type
+            self.error_representation = fmt.rotation_error_representation
+
+    def get_format(self):
+        return CSVSpatialFormat(fmt_type=CSVSpatialFormatType.PosOrientWithCov,
+                                est_err_type=self.estimation_error_type,
+                                err_rep_type=self.error_representation)
 
     def load_from_CSV(self, filename):
         if not os.path.isfile(filename):
@@ -77,6 +89,9 @@ class TrajectoryEstimated(Trajectory):
 
         loader = CSV2DataFrame(filename=filename)
         self.load_from_DataFrame(loader.data_frame)
+        if loader.data_loaded:
+            self.set_format(CSVSpatialFormat.identify_format(fn=filename))
+
         return loader.data_loaded
 
     def load_from_DataFrame(self, df):
@@ -92,7 +107,7 @@ class TrajectoryEstimated(Trajectory):
         if self.is_empty():
             return False
         df = self.to_DataFrame()
-        CSV2DataFrame.save_CSV(df, filename=filename, fmt=CSVSpatialFormatType.PosOrientWithCov)
+        CSV2DataFrame.save_CSV(df, filename=filename, fmt=self.get_format())
         return True
 
 
