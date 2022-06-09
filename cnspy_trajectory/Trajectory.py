@@ -25,7 +25,7 @@ import numpy as np
 from spatialmath import UnitQuaternion, SE3, SO3, Quaternion
 from cnspy_csv2dataframe.TUMCSV2DataFrame import TUMCSV2DataFrame
 from cnspy_csv2dataframe.CSV2DataFrame import CSV2DataFrame
-from cnspy_spatial_csv_formats.CSVFormatPose import CSVFormatPose
+from cnspy_spatial_csv_formats.CSVSpatialFormatType import CSVSpatialFormatType
 from cnspy_trajectory.SpatialConverter import SpatialConverter
 
 
@@ -82,7 +82,7 @@ class Trajectory:
         if self.is_empty():
             return False
         df = TUMCSV2DataFrame.TPQ_to_DataFrame(self.t_vec, self.p_vec, self.q_vec)
-        TUMCSV2DataFrame.save_CSV(df, filename=filename, fmt=CSVFormatPose.TUM)
+        TUMCSV2DataFrame.save_CSV(df, filename=filename, fmt=CSVSpatialFormatType.TUM)
         return True
 
     def is_empty(self):

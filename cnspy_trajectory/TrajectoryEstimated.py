@@ -23,7 +23,7 @@ import pandas
 from cnspy_trajectory.Trajectory import Trajectory
 from cnspy_csv2dataframe.PosOrientWithCov2DataFrame import PosOrientWithCov2DataFrame
 from cnspy_csv2dataframe.CSV2DataFrame import CSV2DataFrame
-from cnspy_spatial_csv_formats.CSVFormatPose import CSVFormatPose
+from cnspy_spatial_csv_formats.CSVSpatialFormatType import CSVSpatialFormatType
 from cnspy_spatial_csv_formats.EstimationErrorType import EstimationErrorType
 from cnspy_spatial_csv_formats.RotationErrorRepresentationType import RotationErrorRepresentationType
 
@@ -92,7 +92,7 @@ class TrajectoryEstimated(Trajectory):
         if self.is_empty():
             return False
         df = self.to_DataFrame()
-        CSV2DataFrame.save_CSV(df, filename=filename, fmt=CSVFormatPose.PosOrientWithCov)
+        CSV2DataFrame.save_CSV(df, filename=filename, fmt=CSVSpatialFormatType.PosOrientWithCov)
         return True
 
 
