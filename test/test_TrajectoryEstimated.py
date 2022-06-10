@@ -49,18 +49,17 @@ class TrajectoryEstimated_Test(unittest.TestCase):
         # self.assertTrue(obj.data_loaded)
         self.stop()
 
-        print(obj.Sigma_p_vec[1000])
-        print(obj.Sigma_p_vec[1000])
+        print('\n' + str(obj.Sigma_p_vec[1000]))
+        print('\n' + str(obj.Sigma_p_vec[1000]))
         self.start()
         obj.save_to_CSV(filename=str(SAMPLE_DATA_DIR + '/results/ID1-pose-est-cov-copy.csv'))
         self.stop()
 
     def test_load_pose_cov_traj(self):
-        # TODO: does not work yet
         fn = str(SAMPLE_DATA_DIR + '/ID1-pose-est-pose-cov.csv')
         obj = TrajectoryEstimated()
         obj.load_from_CSV(filename=fn)
-        print(obj.Sigma_T_vec[1])
+        print('\n' + str(obj.Sigma_T_vec[1]))
 
 
 
