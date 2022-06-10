@@ -91,6 +91,19 @@ class Trajectory_Test(unittest.TestCase):
         self.assertTrue(rpy_vec.shape[0] == traj.num_elems())
         self.assertTrue(rpy_vec.shape[1] == 3)
 
+    def test_get_angle_axis_vec(self):
+        traj = self.load_trajectory_from_CSV()
+        phi_vec, axis_vec_ = traj.get_angle_axis_vec(unit='rad')
+        phi_vec_, axis_vec = traj.get_angle_axis_vec(unit='deg')
+        self.assertTrue(axis_vec.shape[0] == traj.num_elems())
+        self.assertTrue(axis_vec.shape[1] == 3)
+        self.assertTrue(phi_vec.shape[0] == traj.num_elems())
+        self.assertTrue(phi_vec.shape[1] == 1)
+
+
+
+
+
     def test_transform(self):
         traj = self.load_trajectory_from_CSV()
         self.assertTrue(traj.num_elems() > 0)

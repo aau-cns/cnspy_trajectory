@@ -35,7 +35,7 @@ class TrajectoryPlotter_Test(unittest.TestCase):
 
     def load_trajectory2_from_CSV(self):
         traj = TrajectoryEstimated()
-        traj.load_from_CSV(filename=str(SAMPLE_DATA_DIR + '/ID1-pose-est-cov.csv'))
+        traj.load_from_CSV(filename=str(SAMPLE_DATA_DIR + '/ID1-pose-est-posorient-cov.csv'))
         self.assertFalse(traj.is_empty())
         return traj
 
@@ -59,6 +59,20 @@ class TrajectoryPlotter_Test(unittest.TestCase):
                                                                 radians=False,
                                                                 plot_type=TrajectoryPlotTypes.plot_2D_over_t))
         print('done')
+
+    def test_plot_pose2(self):
+        traj = self.load_trajectory_from_CSV()
+
+        plotter = TrajectoryPlotter(traj_obj=traj, config=TrajectoryPlotConfig(show=False, close_figure=False))
+        plotter.plot_pose(plot_angle=True, cfg=TrajectoryPlotConfig(show=True,
+                                                                close_figure=False,
+                                                                radians=False,
+                                                                plot_type=TrajectoryPlotTypes.plot_2D_over_t))
+        plotter.plot_pose(plot_angle=True, cfg=TrajectoryPlotConfig(show=True,
+                                                                close_figure=False,
+                                                                radians=True,
+                                                                plot_type=TrajectoryPlotTypes.plot_2D_over_t))
+        print('test_plot_pose2 done')
 
     def test_plot_multi(self):
         plotter1 = TrajectoryPlotter(traj_obj=self.load_trajectory_from_CSV(),
