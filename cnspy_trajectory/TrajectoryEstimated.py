@@ -22,6 +22,7 @@ import os
 import pandas
 from cnspy_trajectory.Trajectory import Trajectory
 from cnspy_csv2dataframe.PosOrientWithCov2DataFrame import PosOrientWithCov2DataFrame
+from cnspy_csv2dataframe.PoseWithCov2DataFrame import PoseWithCov2DataFrame
 from cnspy_csv2dataframe.CSV2DataFrame import CSV2DataFrame
 from cnspy_spatial_csv_formats.CSVSpatialFormatType import CSVSpatialFormatType
 from cnspy_spatial_csv_formats.CSVSpatialFormat import CSVSpatialFormat
@@ -36,51 +37,40 @@ class TrajectoryEstimated(Trajectory):
 
     # small angle `theta` uncertainty: R = ( eye(3) + skew(theta_R)), a 3x3 covariance matrix.
     # The with upper triangular elements are vectorized in radiant: 'qrr', 'qrp', 'qry', 'qpp', 'qpy', 'qyy'
-    Sigma_q_vec = None
+    Sigma_R_vec = None
 
-    # specifies if the position uncertainty is defined w.r.t. the global frame (W) or the local/body frame (B)
-    # p_WB_in_W/B_err \sim N(0, Sigma_p)
-    # - True: p_WB_in_W_true = p_WB_in_W_est + p_WB_in_W_err;
-    # - False: p_WB_in_W_true = p_WB_in_W_est + R(q_WB_est)*p_WB_in_B_err
-    #global_p_uncertainty = True
-    # specifies if the orientation uncertainty is defined w.r.t. the global frame (W) or the local/body frame (B)
-    # q_WB_err \sim N(0, Sigma_q)
-    # - True = R(q_WB_true) = R(q_WB_err)*R(q_WB_est)
-    # - False: R(q_WB_true) = R(q_WB_est)*R(q_WB_err)
-    #global_q_uncertainty = False
+    # correlation between position (p) and orientation (R): 3x3 covariance matrix.
+    # The with upper triangular elements are vectorized: 'pxr', 'pxp', 'pxy', 'pyr', 'pyp', 'pyy', 'pzr', 'pzp', 'pzy'
+    Sigma_pR_vec = None
 
-    # specifies the uncertainty of the rotation (Sigma_q_vec)
-    error_representation = ErrorRepresentationType.R_small_theta
-    # specifies global or local definitions of the uncertainty (Sigma_p/q_vec)
-    estimation_error_type = EstimationErrorType.type5
+    Sigma_T_vec = None
 
-    def __init__(self, t_vec=None, p_vec=None, q_vec=None, Sigma_p_vec=None, Sigma_q_vec=None, df=None,
-                 rot_err_representation=ErrorRepresentationType.R_small_theta,
-                 estimation_error_type=EstimationErrorType.type1, fmt=None):
+    # EstimationErrorType: specifies global or local definitions of the uncertainty (Sigma_p/q_vec)
+    # ErrorRepresentationType: specifies the uncertainty of the rotation (Sigma_R_vec)
+    format = CSVSpatialFormat(est_err_type=EstimationErrorType.type5,err_rep_type=ErrorRepresentationType.R_small_theta)
+
+    def __init__(self, t_vec=None, p_vec=None, q_vec=None,
+                 Sigma_p_vec=None, Sigma_R_vec=None,
+                 Sigma_pR_vec=None, Sigma_T_vec=None,
+                 df=None, fmt=None):
         Trajectory.__init__(self, t_vec=t_vec, p_vec=p_vec, q_vec=q_vec)
         self.Sigma_p_vec = Sigma_p_vec
-        self.Sigma_q_vec = Sigma_q_vec
+        self.Sigma_R_vec = Sigma_R_vec
+        self.Sigma_pR_vec = Sigma_pR_vec
+        self.Sigma_T_vec = Sigma_T_vec
 
         if df is not None:
             self.load_from_DataFrame(df)
 
-        if rot_err_representation is not None:
-            self.error_representation = rot_err_representation
-
-        if estimation_error_type is not None:
-            self.estimation_error_type = estimation_error_type
         if fmt is not None:
             self.set_format(fmt)
 
     def set_format(self, fmt):
         if fmt is not None and isinstance(fmt, CSVSpatialFormat):
-            self.estimation_error_type = fmt.estimation_error_type
-            self.error_representation = fmt.rotation_error_representation
+            self.format = fmt
 
     def get_format(self):
-        return CSVSpatialFormat(fmt_type=CSVSpatialFormatType.PosOrientWithCov,
-                                est_err_type=self.estimation_error_type,
-                                err_rep_type=self.error_representation)
+        return self.format
 
     def load_from_CSV(self, filename):
         if not os.path.isfile(filename):
@@ -88,20 +78,40 @@ class TrajectoryEstimated(Trajectory):
             return False
 
         loader = CSV2DataFrame(filename=filename)
-        self.load_from_DataFrame(loader.data_frame)
         if loader.data_loaded:
-            self.set_format(CSVSpatialFormat.identify_format(fn=filename))
+            self.load_from_DataFrame(df=loader.data_frame, fmt=loader.format)
+            return True
 
-        return loader.data_loaded
+        return False
 
-    def load_from_DataFrame(self, df):
+    def load_from_DataFrame(self, df, fmt=None):
         assert (isinstance(df, pandas.DataFrame))
-        self.t_vec, self.p_vec, self.q_vec, self.Sigma_p_vec, \
-            self.Sigma_q_vec = PosOrientWithCov2DataFrame.DataFrame_to_TPQCov(data_frame=df)
+        if fmt is None:
+            fmt = self.format
+        else:
+            self.set_format(fmt)
+
+        # TODO: different uncertainties can be loaded! either full pose covariance or position and orientation separated
+        if fmt.type == CSVSpatialFormatType.PosOrientWithCov:
+            self.t_vec, self.p_vec, self.q_vec, self.Sigma_p_vec, \
+                self.Sigma_R_vec = PosOrientWithCov2DataFrame.DataFrame_to_TPQCov(data_frame=df)
+        elif fmt.type == CSVSpatialFormatType.PoseWithCov:
+            self.t_vec, self.p_vec, self.q_vec, self.Sigma_T_vec = \
+                PoseWithCov2DataFrame.DataFrame_to_TPQCov(data_frame=df)
+        else:
+            print('Error: format not supported yet')
+            assert(False)
 
     def to_DataFrame(self):
-        return PosOrientWithCov2DataFrame.TPQCov_to_DataFrame(self.t_vec, self.p_vec, self.q_vec, self.Sigma_p_vec,
-                                                              self.Sigma_q_vec)
+        if self.format.type == CSVSpatialFormatType.PosOrientWithCov:
+            return PosOrientWithCov2DataFrame.TPQCov_to_DataFrame(self.t_vec, self.p_vec, self.q_vec, self.Sigma_p_vec,
+                                                                  self.Sigma_R_vec)
+        elif self.format.type == CSVSpatialFormatType.PoseWithCov:
+            return PoseWithCov2DataFrame.TPQCov_to_DataFrame(self.t_vec, self.p_vec, self.q_vec, self.Sigma_T_vec)
+            assert (False)
+        else:
+            print('Error: format not supported yet')
+            assert (False)
 
     def save_to_CSV(self, filename):
         if self.is_empty():
