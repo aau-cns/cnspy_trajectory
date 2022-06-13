@@ -24,6 +24,7 @@ from cnspy_trajectory.Trajectory import Trajectory
 from cnspy_csv2dataframe.PosOrientWithCov2DataFrame import PosOrientWithCov2DataFrame
 from cnspy_csv2dataframe.PoseWithCov2DataFrame import PoseWithCov2DataFrame
 from cnspy_csv2dataframe.CSV2DataFrame import CSV2DataFrame
+from cnspy_csv2dataframe.TUMCSV2DataFrame import TUMCSV2DataFrame
 from cnspy_spatial_csv_formats.CSVSpatialFormatType import CSVSpatialFormatType
 from cnspy_spatial_csv_formats.CSVSpatialFormat import CSVSpatialFormat
 from cnspy_spatial_csv_formats.EstimationErrorType import EstimationErrorType
@@ -105,12 +106,13 @@ class TrajectoryEstimated(Trajectory):
     def to_DataFrame(self):
         if self.format.type == CSVSpatialFormatType.PosOrientWithCov:
             return PosOrientWithCov2DataFrame.TPQCov_to_DataFrame(self.t_vec, self.p_vec, self.q_vec, self.Sigma_p_vec,
-                                                                  self.Sigma_R_vec)
+                                                         self.Sigma_R_vec)
         elif self.format.type == CSVSpatialFormatType.PoseWithCov:
             return PoseWithCov2DataFrame.TPQCov_to_DataFrame(self.t_vec, self.p_vec, self.q_vec, self.Sigma_T_vec)
-            assert (False)
+        elif self.format.type == CSVSpatialFormatType.TUM:
+            return TUMCSV2DataFrame.TPQ_to_DataFrame(self.t_vec, self.p_vec, self.q_vec)
         else:
-            print('Error: format not supported yet')
+            print('Error: format [' + str(self.format.type) + '] not supported yet')
             assert (False)
 
     def save_to_CSV(self, filename):
