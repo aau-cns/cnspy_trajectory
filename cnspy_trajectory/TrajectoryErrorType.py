@@ -30,6 +30,24 @@ class TrajectoryErrorType:
     def __str__(self):
         return self.err_type.__str__()
 
+    def is_local_pose(self):
+        return self.err_type == EstimationErrorType.type1
+
+    def is_global_pose(self):
+        return self.err_type == EstimationErrorType.type2
+
+    def is_local_pose_inv(self):
+        return self.err_type == EstimationErrorType.type3
+
+    def is_global_pose_inv(self):
+        return self.err_type == EstimationErrorType.type4
+
+    def is_global_p_local_q(self):
+        return self.err_type == EstimationErrorType.type5
+
+    def is_local_p_global_q(self):
+        return self.err_type == EstimationErrorType.type6
+
     def is_local_rotation_error(self):
         if self.err_type == EstimationErrorType.type1 or \
            self.err_type == EstimationErrorType.type3 or \
@@ -43,7 +61,6 @@ class TrajectoryErrorType:
                 self.err_type == EstimationErrorType.type3 or \
                 self.err_type == EstimationErrorType.type5:
             return True
-
         return False
 
     def error_def(self):
