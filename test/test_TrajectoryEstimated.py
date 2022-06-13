@@ -20,10 +20,15 @@
 # enum
 ########################################################################################################################
 import os
+
+from cnspy_spatial_csv_formats.ErrorRepresentationType import ErrorRepresentationType
 from cnspy_trajectory.Trajectory import Trajectory
 from cnspy_trajectory.TrajectoryEstimated import TrajectoryEstimated
 import unittest
 import time
+
+from cnspy_trajectory.TrajectoryPlotConfig import TrajectoryPlotConfig
+from cnspy_trajectory.TrajectoryPlotTypes import TrajectoryPlotTypes
 
 SAMPLE_DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'sample_data')
 
@@ -41,6 +46,7 @@ class TrajectoryEstimated_Test(unittest.TestCase):
         fn = str(SAMPLE_DATA_DIR + '/ID1-pose-est-posorient-cov.csv')
         obj = TrajectoryEstimated()
         obj.load_from_CSV(filename=fn)
+        obj.format.rotation_error_representation = ErrorRepresentationType.R_small_theta
         return obj
 
     def test_load_trajectory_from_CSV(self):
@@ -61,7 +67,28 @@ class TrajectoryEstimated_Test(unittest.TestCase):
         obj.load_from_CSV(filename=fn)
         print('\n' + str(obj.Sigma_T_vec[1]))
 
+    def test_plot_pos_orient_cov_theta_R(self):
+        traj_est = self.load_()
+        traj_est.format.rotation_error_representation = ErrorRepresentationType.R_small_theta
+        cfg = TrajectoryPlotConfig(show=False, close_figure=False, radians=False,
+                                   plot_type=TrajectoryPlotTypes.plot_2D_over_dist,
+                                   save_fn=str(SAMPLE_DATA_DIR + '/../../doc/traj_est_pos_orient_cov_theta_R.png'))
+        traj_est.plot_pos_orient_cov(angles=True, cfg=cfg)
 
+
+    def test_plot_pos_orient_cov_theta_q(self):
+        traj_est = self.load_()
+        traj_est.format.rotation_error_representation = ErrorRepresentationType.q_small_theta
+        cfg = TrajectoryPlotConfig(show=False, close_figure=False,
+                                   save_fn=str(SAMPLE_DATA_DIR + '/../../doc/traj_est_pos_orient_cov_theta_q.png'))
+        traj_est.plot_pos_orient_cov(angles=True, cfg=cfg)
+
+    def test_plot_pos_orient_cov_theta_so3(self):
+        traj_est = self.load_()
+        traj_est.format.rotation_error_representation = ErrorRepresentationType.so3_theta
+        cfg = TrajectoryPlotConfig(show=False, close_figure=False, radians=False,
+                                   save_fn=str(SAMPLE_DATA_DIR + '/../../doc/traj_est_pos_orient_cov_theta_so3.png'))
+        traj_est.plot_pos_orient_cov(angles=True, cfg=cfg)
 
 if __name__ == "__main__":
     unittest.main()

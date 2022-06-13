@@ -47,29 +47,11 @@ from cnspy_trajectory.SpatialConverter import SpatialConverter
 
 
 class TrajectoryPlotter:
-    traj_obj = None
-    traj_df = None
-    config = None
-
-    def __init__(self, traj_obj, config=TrajectoryPlotConfig()):
-        if config.num_points > 0:
-            # subsample cnspy_trajectory first:
-            df = traj_obj.to_DataFrame()
-            self.traj_df = CSV2DataFrame.subsample_DataFrame(df, num_max_points=config.num_points)
-            self.traj_obj = Trajectory(df=self.traj_df)
-        else:
-            self.traj_obj = traj_obj
-            self.traj_df = traj_obj.to_DataFrame()
-
-        self.config = config
-
-
-
 
     @staticmethod
-    def multi_plot_3D(traj_plotter_list, cfg, name_list=[]):
+    def multi_plot_3D(traj_list, cfg, name_list=[]):
         assert (isinstance(cfg, TrajectoryPlotConfig))
-        num_plots = len(traj_plotter_list)
+        num_plots = len(traj_list)
 
         fig = plt.figure(figsize=(20, 15), dpi=int(cfg.dpi))
         ax = fig.add_subplot(111, projection='3d')
@@ -80,7 +62,7 @@ class TrajectoryPlotter:
         ax.set_prop_cycle('color', colors)
 
         idx = 0
-        for traj in traj_plotter_list:
+        for traj in traj_list:
             traj.ax_plot_pos_3D(ax=ax, label=name_list[idx])
             idx += 1
 
@@ -97,71 +79,4 @@ class TrajectoryPlotter:
 
         return fig, ax
 
-    @staticmethod
-    def plot_pose_err(plotter_est, plotter_err, fig=None, cfg=None, angles=False, plotter_gt=None, local_p_err=True,
-                      local_R_err=True):
-        assert(isinstance(plotter_err, TrajectoryPlotter))
-        assert(isinstance(plotter_est, TrajectoryPlotter))
-
-        if cfg is None:
-            cfg = plotter_est.config
-        else:
-            assert (isinstance(cfg, TrajectoryPlotConfig))
-
-        if fig is None:
-            fig = plt.figure(figsize=(20, 15), dpi=int(cfg.dpi))
-
-        # create 2x2 grid
-        ax1 = fig.add_subplot(221)
-        ax2 = fig.add_subplot(222)
-        ax3 = fig.add_subplot(223)
-        ax4 = fig.add_subplot(224)
-
-        # Error type text:
-        text_p_err = 'local '
-        if not local_p_err:
-            text_p_err = 'global '
-        # Error type text:
-        text_R_err = 'local '
-        if not local_R_err:
-            text_R_err = 'global '
-
-        plotter_est.ax_plot_pos(ax=ax1, cfg=cfg)
-        if plotter_gt:
-            plotter_gt.ax_plot_pos(ax=ax1, cfg=cfg, colors=['k', 'k', 'k'], labels=['gt_x', 'gt_y', 'gt_z'],
-                                   ls=PlotLineStyle(linestyle='-.', linewidth=0.5))
-        plotter_err.ax_plot_pos(ax=ax2, cfg=cfg)
-
-        ax1.set_ylabel('position est [m]')
-        ax2.set_ylabel(text_p_err + 'position err [m]')
-
-        if angles:
-            plotter_est.ax_plot_rpy(ax=ax3, cfg=cfg)
-            if plotter_gt:
-                plotter_gt.ax_plot_rpy(ax=ax3, cfg=cfg, colors=['k', 'k', 'k'],
-                                       ls=PlotLineStyle(linestyle='-.', linewidth=0.5))
-
-            plotter_err.ax_plot_angle(ax=ax4, cfg=cfg)
-
-            if cfg.radians:
-                ax3.set_ylabel('rotation est [rad]')
-                ax4.set_ylabel(text_R_err + 'rotation err [rad]')
-            else:
-                ax3.set_ylabel('rotation est [deg]')
-                ax4.set_ylabel(text_R_err + 'rotation err [deg]')
-        else:
-            plotter_est.ax_plot_q(ax=ax3, cfg=cfg)
-            if plotter_gt:
-                plotter_gt.ax_plot_q(ax=ax3, cfg=cfg, colors=['k', 'k', 'k', 'k'],
-                                     ls=PlotLineStyle(linestyle='-.', linewidth=0.5))
-            plotter_err.ax_plot_q(ax=ax4, cfg=cfg)
-            ax4.set_ylabel(text_R_err + 'quaternion err')
-
-        ax1.grid(visible=True)
-        ax2.grid(visible=True)
-        ax3.grid(visible=True)
-        ax4.grid(visible=True)
-        TrajectoryPlotConfig.show_save_figure(cfg, fig)
-
-        return fig, ax1, ax2, ax3, ax4
 
