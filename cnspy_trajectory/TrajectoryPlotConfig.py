@@ -37,11 +37,12 @@ class TrajectoryPlotConfig():
     show = True
     close_figure = False
     radians = True
+    relative_time = True
     view_angle = (45, 45)  # viewing angle of 3D plots tuple (azimuth, elevation)
 
     def __init__(self, white_list=[], num_points=0,
                  plot_type=TrajectoryPlotTypes.plot_3D, dpi=200, title="",
-                 scale=1.0, save_fn="", result_dir=".", show=True, close_figure=False, radians=True,
+                 scale=1.0, save_fn="", result_dir=".", show=True, close_figure=False, radians=True, relative_time=True,
                  view_angle=(45, 45)):
         self.white_list = white_list
         self.num_points = num_points
@@ -54,6 +55,7 @@ class TrajectoryPlotConfig():
         self.show = show
         self.close_figure = close_figure
         self.radians = radians
+        self.relative_time = relative_time
         self.view_angle = view_angle
 
     @staticmethod

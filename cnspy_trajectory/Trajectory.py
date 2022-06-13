@@ -19,19 +19,31 @@
 # Requirements:
 # enum
 ########################################################################################################################
-
+import math
 import os
 import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D  # <--- This is important for 3d plotting
+# from mpl_toolkits.mplot3d import Axes3D  # <--- This is important for 3d plotting (copy, if accidentally auto-removed)
+from spatialmath import base, SE3
+
 from cnspy_csv2dataframe.TUMCSV2DataFrame import TUMCSV2DataFrame
 from cnspy_csv2dataframe.CSV2DataFrame import CSV2DataFrame
 from cnspy_spatial_csv_formats.CSVSpatialFormatType import CSVSpatialFormatType
+from cnspy_trajectory.PlotLineStyle import PlotLineStyle
+from cnspy_trajectory.TrajectoryPlotConfig import TrajectoryPlotConfig
+from cnspy_trajectory.TrajectoryPlotTypes import TrajectoryPlotTypes
+from cnspy_trajectory.TrajectoryPlotUtils import TrajectoryPlotUtils
+
 from cnspy_trajectory.SpatialConverter import SpatialConverter
+from cnspy_trajectory.pyplot_utils import set_axes_equal
+
 
 class Trajectory:
     p_vec = None
     q_vec = None
     t_vec = None
-    distance = None  # cache
+    dist = None  # cache
 
     def __init__(self, t_vec=None, p_vec=None, q_vec=None, df=None):
         """
@@ -95,11 +107,11 @@ class Trajectory:
 
     def get_distance(self):
         if self.p_vec is not None:
-            if self.distance is not None:
-                return self.distance
+            if self.dist is not None:
+                return self.dist
             else:
-                self.distance =  Trajectory.distance(self.p_vec)
-                return self.distance
+                self.dist = Trajectory.distance(self.p_vec)
+                return self.dist
         else:
             return 0
 
@@ -154,3 +166,266 @@ class Trajectory:
     def distance(p_vec):
         accum_distances = Trajectory.distances_from_start(p_vec)
         return accum_distances[-1]
+
+    ####################################################################################################################
+    ######### PLOTTING #################################################################################################
+    ####################################################################################################################
+    def get_pos_data(self, cfg):
+        assert (isinstance(cfg, TrajectoryPlotConfig))
+
+        ts = self.t_vec
+        xs = self.p_vec[:, 0]
+        ys = self.p_vec[:, 1]
+        zs = self.p_vec[:, 2]
+        dist_vec = self.get_accumulated_distances()
+
+        if cfg.white_list:
+            print("white list args: " + str(cfg.white_list))
+        if any([flag == 'x' for flag in cfg.white_list]):
+            xs = []
+            print("clear xs")
+        if any([flag == 'y' for flag in cfg.white_list]):
+            ys = []
+            print("clear ys")
+        if any([flag == 'z' for flag in cfg.white_list]):
+            zs = []
+            print("clear zs")
+
+        if not (len(xs) and isinstance(xs[0], np.float64) and not math.isnan(xs[0])):
+            xs = []
+        if not (len(ys) and isinstance(ys[0], np.float64) and not math.isnan(ys[0])):
+            ys = []
+        if not (len(zs) and isinstance(zs[0], np.float64) and not math.isnan(zs[0])):
+            zs = []
+
+        if cfg.scale and cfg.scale != 1.0:
+            scale = float(cfg.scale)
+            xs *= scale
+            ys *= scale
+            zs *= scale
+
+        return ts, xs, ys, zs, dist_vec
+
+    def get_q_data(self, cfg):
+        assert (isinstance(cfg, TrajectoryPlotConfig))
+
+        ts = self.t_vec
+        qx = self.q_vec[:, 0]
+        qy = self.q_vec[:, 1]
+        qz = self.q_vec[:, 2]
+        qw = self.q_vec[:, 3]
+        dist_vec = self.get_accumulated_distances()
+
+        if cfg.white_list:
+            print("white list args: " + str(cfg.white_list))
+        if any([flag == 'qx' for flag in cfg.white_list]):
+            qx = []
+            print("clear qx")
+        if any([flag == 'qy' for flag in cfg.white_list]):
+            qy = []
+            print("clear qy")
+        if any([flag == 'qz' for flag in cfg.white_list]):
+            qz = []
+            print("clear qz")
+        if any([flag == 'qw' for flag in cfg.white_list]):
+            qw = []
+            print("clear qw")
+
+        if not (len(qx) and isinstance(qx[0], np.float64) and not math.isnan(qx[0])):
+            qx = []
+        if not (len(qy) and isinstance(qy[0], np.float64) and not math.isnan(qy[0])):
+            qy = []
+        if not (len(qz) and isinstance(qz[0], np.float64) and not math.isnan(qz[0])):
+            qz = []
+        if not (len(qw) and isinstance(qw[0], np.float64) and not math.isnan(qz[0])):
+            qw = []
+        return ts, qx, qy, qz, qw, dist_vec
+
+    def get_rpy_data(self, cfg):
+        assert (isinstance(cfg, TrajectoryPlotConfig))
+
+        rpy_vec = self.get_rpy_vec()
+
+        rpy_vec = np.unwrap(rpy_vec, axis=0)
+        if not cfg.radians:
+            rpy_vec = np.rad2deg(rpy_vec)
+
+        ts = self.t_vec
+        rs = rpy_vec[:, 0]
+        ps = rpy_vec[:, 1]
+        ys = rpy_vec[:, 2]
+        dist_vec = self.get_accumulated_distances()
+
+        if cfg.white_list:
+            print("white list args: " + str(cfg.white_list))
+        if any([flag == 'roll' for flag in cfg.white_list]):
+            rs = []
+            print("clear rs")
+        if any([flag == 'pitch' for flag in cfg.white_list]):
+            ps = []
+            print("clear ps")
+        if any([flag == 'yaw' for flag in cfg.white_list]):
+            ys = []
+            print("clear ys")
+
+        if not (len(rs) and isinstance(rs[0], np.float64) and not math.isnan(rs[0])):
+            rs = []
+        if not (len(ps) and isinstance(ps[0], np.float64) and not math.isnan(ps[0])):
+            ps = []
+        if not (len(ys) and isinstance(ys[0], np.float64) and not math.isnan(ys[0])):
+            ys = []
+
+        return ts, rs, ps, ys, dist_vec
+
+    ###### PLOT-AXIS
+    def ax_plot_pos(self, ax, cfg,
+                    x_label_prefix='',
+                    y_label_prefix='',
+                    colors=['r', 'g', 'b'],
+                    labels=['x', 'y', 'z'],
+                    ls=PlotLineStyle()):
+
+        assert (isinstance(cfg, TrajectoryPlotConfig))
+
+        ts, xs, ys, zs, dist_vec = self.get_pos_data(cfg)
+
+        TrajectoryPlotUtils.ax_plot_pos(ax=ax, ts=ts, xs=xs, ys=ys, zs=zs, dist_vec=dist_vec,
+                                        x_label_prefix=x_label_prefix, y_label_prefix=y_label_prefix,
+                                        plot_type=cfg.plot_type,
+                                        relative_time=cfg.relative_time,
+                                        colors=colors, labels=labels, ls=ls)
+
+    def ax_plot_rpy(self, ax, cfg,
+                    x_label_prefix='',
+                    y_label_prefix='Rz(y)Ry(p)Rx(r)',
+                    colors=['r', 'g', 'b'],
+                    labels=['x', 'y', 'z'],
+                    ls=PlotLineStyle()):
+        assert (isinstance(cfg, TrajectoryPlotConfig))
+
+        ts, xs, ys, zs, dist_vec = self.get_rpy_data(cfg)
+
+        TrajectoryPlotUtils.ax_plot_rpy(ax=ax,ts=ts, xs=xs, ys=ys, zs=zs, dist_vec=dist_vec,
+                                        x_label_prefix=x_label_prefix, y_label_prefix=y_label_prefix,
+                                        plot_type=cfg.plot_type,
+                                        radians=cfg.radians,
+                                        relative_time=cfg.relative_time,
+                                        colors=colors, labels=labels, ls=ls)
+
+    def ax_plot_q(self, ax, cfg,
+                    x_label_prefix='',
+                    y_label_prefix='',
+                    colors=['r', 'g', 'b', 'k'],
+                    labels=['qx', 'qy', 'qz', 'qw'],
+                    ls=PlotLineStyle()):
+        assert (isinstance(cfg, TrajectoryPlotConfig))
+
+        ts, qx, qy, qz, qw, dist_vec = self.get_q_data(cfg)
+
+        TrajectoryPlotUtils.ax_plot_q(ax=ax, ts=ts, qx=qx, qy=qy, qz=qz, qw=qw, dist_vec=dist_vec,
+                                      x_label_prefix=x_label_prefix,
+                                      y_label_prefix=y_label_prefix,
+                                      plot_type=cfg.plot_type,
+                                      relative_time=cfg.relative_time,
+                                      colors=colors, labels=labels, ls=ls)
+
+    def ax_plot_angle(self, ax, cfg,
+                      x_label_prefix='',
+                      y_label_prefix='angle',
+                      colors=['r'],
+                      labels=['phi'], ls=PlotLineStyle()):
+        assert (isinstance(cfg, TrajectoryPlotConfig))
+
+        unit = 'deg'
+        if cfg.radians:
+            unit='rad'
+        phi_vec, axis_vec = self.get_angle_axis_vec(unit=unit)
+        dist_vec = self.get_distance()
+        ts  = self.t_vec
+
+        TrajectoryPlotUtils.ax_plot_angle(ax=ax, phi_vec=phi_vec, ts=ts, dist_vec=dist_vec, radians=cfg.radians,
+                                          x_label_prefix=x_label_prefix,
+                                          y_label_prefix=y_label_prefix,
+                                          plot_type=cfg.plot_type,
+                                          relative_time=cfg.relative_time,
+                                          colors=colors, labels=labels, ls=ls)
+
+    def ax_plot_frames_3D(self, ax, cfg, plot_origin=True, origin_name="0", num_markers=0):
+        assert (isinstance(cfg, TrajectoryPlotConfig))
+
+        if plot_origin and not self.traj_obj.is_empty():
+            T = SE3(self.p_vec[0, 0], self.p_vec[0, 1], self.p_vec[0, 2])
+            base.trplot(T.A, axes=ax, frame=origin_name, rviz=True, length=1, width=0.2, block=False)
+
+        if num_markers > 0 and not self.traj_obj.is_empty():
+            for i in range(1, self.num_elems(), int(self.num_elems() / num_markers)):
+                T_i = SpatialConverter.p_q_HTMQ_to_SE3(self.p_vec[i, :], self.q_vec[i, :])
+                base.trplot(T_i.A, axes=ax, rviz=True,
+                            length=1, width=0.1, block=False)
+        pass
+
+    def ax_plot_pos_3D(self, ax, cfg, label='cnspy_trajectory'):
+        assert (isinstance(cfg, TrajectoryPlotConfig))
+
+        ts, xs, ys, zs, dist_vec = self.get_pos_data(cfg)
+
+        if cfg.plot_type == TrajectoryPlotTypes.scatter_3D:
+            ax.scatter(xs, ys, zs, zdir='z', label=str(label))
+        elif cfg.plot_type == TrajectoryPlotTypes.plot_3D:
+            ax.plot3D(xs, ys, zs, label=str(label))
+        pass
+
+    def plot_pose(self, cfg=TrajectoryPlotConfig(), fig=None, angles=False, plot_angle=False):
+        assert (isinstance(cfg, TrajectoryPlotConfig))
+
+        if fig is None:
+            fig = plt.figure(figsize=(20, 15), dpi=int(cfg.dpi))
+
+        ax1 = fig.add_subplot(211)
+        self.ax_plot_pos(ax=ax1, cfg=cfg)
+        ax2 = fig.add_subplot(212)
+
+        if plot_angle:
+            self.ax_plot_angle(ax=ax2, cfg=cfg)
+        else:
+            if angles:
+                self.ax_plot_rpy(ax=ax2, cfg=cfg)
+            else:
+                self.ax_plot_q(ax=ax2, cfg=cfg)
+
+        TrajectoryPlotConfig.show_save_figure(cfg, fig)
+        return fig, ax1, ax2
+
+    def plot_3D(self, fig=None, ax=None, cfg=TrajectoryPlotConfig()):
+        assert (isinstance(cfg, TrajectoryPlotConfig))
+
+        if fig is None:
+            fig = plt.figure(figsize=(20, 15), dpi=int(cfg.dpi))
+
+        if ax is None:
+            ax = fig.add_subplot(111, projection='3d')
+
+        if cfg.title:
+            ax.set_title(cfg.title)
+        else:
+            if cfg.plot_type == TrajectoryPlotTypes.scatter_3D:
+                ax.set_title("Scatter Plot")
+            else:
+                ax.set_title("Plot3D")
+
+        self.ax_plot_pos_3D(ax=ax, cfg=cfg)
+        self.ax_plot_frames_3D(ax=ax, cfg=cfg, plot_origin=True, num_markers=10)
+
+        set_axes_equal(ax)
+        ax.legend(shadow=True, fontsize='x-small')
+        ax.grid(b=True)
+        ax.set_xlabel('x')
+        ax.set_ylabel('y')
+        ax.set_zlabel('z')
+        set_axes_equal(ax)
+        TrajectoryPlotConfig.set_view_angle(cfg=cfg, ax=ax)
+        TrajectoryPlotConfig.show_save_figure(cfg, fig=fig)
+
+        return fig, ax
+
+    ####################################################################################################################
