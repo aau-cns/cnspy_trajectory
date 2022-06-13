@@ -22,17 +22,16 @@
 
 import os
 import numpy as np
-from spatialmath import UnitQuaternion, SE3, SO3, Quaternion
 from cnspy_csv2dataframe.TUMCSV2DataFrame import TUMCSV2DataFrame
 from cnspy_csv2dataframe.CSV2DataFrame import CSV2DataFrame
 from cnspy_spatial_csv_formats.CSVSpatialFormatType import CSVSpatialFormatType
 from cnspy_trajectory.SpatialConverter import SpatialConverter
 
-
 class Trajectory:
     p_vec = None
     q_vec = None
     t_vec = None
+    distance = None  # cache
 
     def __init__(self, t_vec=None, p_vec=None, q_vec=None, df=None):
         """
@@ -96,7 +95,11 @@ class Trajectory:
 
     def get_distance(self):
         if self.p_vec is not None:
-            return Trajectory.distance(self.p_vec)
+            if self.distance is not None:
+                return self.distance
+            else:
+                self.distance =  Trajectory.distance(self.p_vec)
+                return self.distance
         else:
             return 0
 
@@ -151,4 +154,3 @@ class Trajectory:
     def distance(p_vec):
         accum_distances = Trajectory.distances_from_start(p_vec)
         return accum_distances[-1]
-
