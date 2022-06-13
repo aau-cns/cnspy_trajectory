@@ -28,6 +28,7 @@ from mpl_toolkits.mplot3d import Axes3D  # <--- This is important for 3d plottin
 from spatialmath import base, SE3
 
 from cnspy_csv2dataframe.TUMCSV2DataFrame import TUMCSV2DataFrame
+from cnspy_csv2dataframe.CSV2DataFrame import CSV2DataFrame
 from cnspy_trajectory.Trajectory import Trajectory
 from cnspy_trajectory.TrajectoryEstimated import TrajectoryEstimated
 from cnspy_trajectory.TrajectoryPlotConfig import TrajectoryPlotConfig
@@ -54,7 +55,7 @@ class TrajectoryPlotter:
         if config.num_points > 0:
             # subsample cnspy_trajectory first:
             df = traj_obj.to_DataFrame()
-            self.traj_df = TUMCSV2DataFrame.subsample_DataFrame(df, num_max_points=config.num_points)
+            self.traj_df = CSV2DataFrame.subsample_DataFrame(df, num_max_points=config.num_points)
             self.traj_obj = Trajectory(df=self.traj_df)
         else:
             self.traj_obj = traj_obj
@@ -277,8 +278,6 @@ class TrajectoryPlotter:
             base.trplot(T.A, axes=ax, frame=origin_name, rviz=True, length=1, width=0.2, block=False)
 
         if num_markers > 0 and not self.traj_obj.is_empty():
-            q_vec = self.traj_obj.q_vec
-            p_vec = self.traj_obj.p_vec
             for i in range(1, self.traj_obj.num_elems(), int(self.traj_obj.num_elems()/num_markers)):
                 T_i = SpatialConverter.p_q_HTMQ_to_SE3(self.traj_obj.p_vec[i, :], self.traj_obj.q_vec[i, :])
                 base.trplot(T_i.A, axes=ax, rviz=True,
