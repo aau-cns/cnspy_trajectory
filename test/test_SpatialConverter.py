@@ -79,5 +79,46 @@ class SpatialConverter_Test(unittest.TestCase):
         self.assertTrue(np.allclose(q, np.array([0, 0,  0.38268343, 0.92387953])))
 
 
+    def test_rpy2rot(self):
+        R_ref = SO3.RPY([0, 0, 45], unit='deg')
+        rpy = np.array([0, 0, 45])
+        R_ = SpatialConverter.rpy2rot(rpy, unit='deg')
+        rpy_ = SpatialConverter.rot2rpy(R_, unit='deg')
+        print(R_ref - R_)
+        print(rpy - rpy_)
+        self.assertTrue(np.allclose(R_ref, R_))
+        self.assertTrue(np.allclose(rpy, rpy_))
+
+    def test_theta_q(self):
+        q = np.array([0, 0, 0.38268343, 0.92387953])
+
+        theta_q = SpatialConverter.quat2theta_q(q)
+        print(theta_q)
+        q_ = SpatialConverter.theta_q2quat(theta_q)
+        R_ = SpatialConverter.theta_q2rot(theta_q)
+        self.assertTrue(np.allclose(q, q_))
+
+    def test_theta_so3(self):
+        q = np.array([0, 0, 0.38268343, 0.92387953])
+
+        theta_so3 = SpatialConverter.quat2theta_so3(q)
+        print(theta_so3)
+        q_ = SpatialConverter.theta_so3_2quat(theta_so3)
+        self.assertTrue(np.allclose(q, q_))
+
+        R_ref = SO3.RPY([0, 0, 45], unit='deg').R
+        theta_so3 = SpatialConverter.rot2theta_so3(R_ref)
+        print(theta_so3)
+        R_ = SpatialConverter.theta_so3_2rot(theta_so3)
+        self.assertTrue(np.allclose(R_ref, R_))
+
+    def test_theta_R(self):
+        R_ref = SO3.RPY([4, 2, 4], unit='deg').R
+        theta_R = SpatialConverter.rot2theta_R(R_ref)
+        print(theta_R)
+        R_ = SpatialConverter.theta_R2rot(theta_R)
+        print(R_ref - R_)
+
+
 if __name__ == "__main__":
     unittest.main()

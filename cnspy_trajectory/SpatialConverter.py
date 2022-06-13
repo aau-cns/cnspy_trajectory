@@ -68,9 +68,8 @@ class SpatialConverter:
         elif base.isrot(R_AB, check=False):
             return base.r2q(R_AB, order="xyzs")
         else:
+            print(str(R_AB))
             raise ValueError('Invalid type')
-
-
 
     @staticmethod
     def HTMQ_quaternion_to_SO3(q_AB):
@@ -116,4 +115,80 @@ class SpatialConverter:
 
         return t_AB, SpatialConverter.SO3_to_HTMQ_quaternion(R_AB)
 
+    @staticmethod
+    def rpy2rot(rpy, unit='rad'):
+        return base.rpy2r(roll=rpy[0], pitch=rpy[1], yaw=rpy[2], unit=unit, order='zyx')
 
+    @staticmethod
+    def rot2rpy(R, unit='rad'):
+        # R = rotz(angles[2]) @ roty(angles[1]) @ rotx(angles[0])
+        return base.tr2rpy(T=R, unit=unit, order='zyx')
+
+    @staticmethod
+    def quat2theta_q(q_err):
+        """
+        converts a rotation represented by a quaternion in its small angle approximation
+        > S = R * Exp(theta)
+        > R(q_err) = R^T * S
+        > theta = Log(R(q_err))
+        refer to:
+        * "Quaternion kinematics for the error-state Kalman filter" by Joan Sola,
+            https://arxiv.org/pdf/1711.02508.pdf, chapter 4: Perturbations, derivatives and integrals
+        For really small perturbations the following should be a sufficient approximation:
+        > R(q) = I + skew(theta)   // Sola EQ. 193
+        > theta = unskew(R(q) - I)
+        """
+        return  2 * (q_err[:3] / q_err[3])
+
+    @staticmethod
+    def theta_q2quat(theta_q):
+        q_ = Quaternion(s=1, v=theta_q*0.5)
+        return SpatialConverter.UnitQuaternion_to_HTMQ_quaternion(q_.unit())
+
+    @staticmethod
+    def theta_q2rot(theta_q):
+        q_ = Quaternion(s=1, v=theta_q*0.5)
+        return q_.unit().R
+
+    @staticmethod
+    def quat2theta_so3(q_err):
+        # R = expm(skew(theta_so3))
+        R_ = SpatialConverter.HTMQ_quaternion_to_SO3(q_err)
+        return base.trlog(R_.R, twist=True)
+
+    @staticmethod
+    def theta_so3_2quat(theta_so3):
+        R_ = base.exp2tr(theta_so3)
+        if R_.shape == (4,4):
+            R_ = R_[0:3,0:3]
+        return SpatialConverter.SO3_to_HTMQ_quaternion(R_)
+
+    @staticmethod
+    def rot2theta_so3(R):
+        # R = expm(skew(theta_so3))
+        return base.trlog(R, twist=True)
+
+    @staticmethod
+    def theta_so3_2rot(theta_so3):
+        R_ =  base.exp2tr(theta_so3)
+        if R_.shape == (4,4):
+            R_ = R_[0:3,0:3]
+        return R_
+
+    @staticmethod
+    def quat2theta_R(q_err):
+        # R = I + skew(theta_R)
+        R_ = SpatialConverter.HTMQ_quaternion_to_SO3(q_err)
+        return base.vex(R_.R - np.eye(3))
+
+    @staticmethod
+    def theta_R2rot(theta_R):
+        R_ = np.eye(3) + base.skew(theta_R)
+        # TODO: normalization of rotation matrix via UnitQuaternion
+        q_ = UnitQuaternion(SO3(R_, check=False)).unit()
+        return q_.R
+
+    @staticmethod
+    def rot2theta_R(R):
+        # R = I + skew(theta_R)
+        return base.vex(R - np.eye(3))
