@@ -71,6 +71,7 @@ class TrajectoryPlotter_Test(unittest.TestCase):
     def test_full_error_plot(self):
         traj_gt, traj_est, traj_err = self.load_gt_est_err()
         cfg = TrajectoryPlotConfig(show=True,
+                                   radians=False,
                                    close_figure=False,
                                    save_fn=str(SAMPLE_DATA_DIR + '/../../doc/traj_plotter_full_err.png'),
                                    view_angle=(40, 20))

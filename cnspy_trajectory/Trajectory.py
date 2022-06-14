@@ -122,7 +122,7 @@ class Trajectory:
         rpy_vec = np.zeros(np.shape(self.p_vec))
         for i in range(np.shape(self.p_vec)[0]):
             q = SpatialConverter.HTMQ_quaternion_to_Quaternion(self.q_vec[i, :])
-            rpy_vec[i, :] = q.unit().rpy(order='xyz')
+            rpy_vec[i, :] = q.unit().rpy(order='zyx')
 
         return rpy_vec
 
