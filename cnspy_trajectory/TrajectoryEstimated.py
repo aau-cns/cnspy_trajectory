@@ -57,7 +57,8 @@ class TrajectoryEstimated(Trajectory):
 
     # EstimationErrorType: specifies global or local definitions of the uncertainty (Sigma_p/q_vec)
     # ErrorRepresentationType: specifies the uncertainty of the rotation (Sigma_R_vec)
-    format = CSVSpatialFormat(est_err_type=EstimationErrorType.type5,err_rep_type=ErrorRepresentationType.R_small_theta)
+    format = CSVSpatialFormat(est_err_type=EstimationErrorType.type5,
+                              err_rep_type=ErrorRepresentationType.R_small_theta)
 
     def __init__(self, t_vec=None, p_vec=None, q_vec=None,
                  Sigma_p_vec=None, Sigma_R_vec=None,
@@ -267,7 +268,13 @@ class TrajectoryEstimated(Trajectory):
         ts, xs, ys, zs, dist_vec = self.get_rpy_N_sigma_data(cfg, sigma_N=sigma_N)
 
         TrajectoryPlotUtils.ax_plot_rpy(ax=ax,ts=ts, xs=xs, ys=ys, zs=zs, dist_vec=dist_vec,
-                                        x_label_prefix=x_label_prefix, y_label_prefix=y_label_prefix,
+                                        x_label_prefix=x_label_prefix, y_label_prefix=str(sigma_N)+y_label_prefix,
+                                        plot_type=cfg.plot_type,
+                                        radians=cfg.radians,
+                                        relative_time=cfg.relative_time,
+                                        colors=colors, labels=labels, ls=ls)
+        TrajectoryPlotUtils.ax_plot_rpy(ax=ax,ts=ts, xs=-xs, ys=-ys, zs=-zs, dist_vec=dist_vec,
+                                        x_label_prefix=x_label_prefix, y_label_prefix=str(sigma_N)+y_label_prefix,
                                         plot_type=cfg.plot_type,
                                         radians=cfg.radians,
                                         relative_time=cfg.relative_time,
@@ -276,7 +283,7 @@ class TrajectoryEstimated(Trajectory):
     def ax_plot_p_sigma(self, ax, cfg,
                           sigma_N=3.0,
                           x_label_prefix='',
-                          y_label_prefix='sigma',
+                          y_label_prefix='sigma ',
                           colors=['r', 'g', 'b'],
                           labels=['x', 'y', 'z'],
                           ls=PlotLineStyle()):
@@ -285,11 +292,15 @@ class TrajectoryEstimated(Trajectory):
         ts, xs, ys, zs, dist_vec = self.get_p_N_sigma_data(cfg, sigma_N=sigma_N)
 
         TrajectoryPlotUtils.ax_plot_pos(ax=ax, ts=ts, xs=xs, ys=ys, zs=zs, dist_vec=dist_vec,
-                                        x_label_prefix=x_label_prefix, y_label_prefix=y_label_prefix,
+                                        x_label_prefix=x_label_prefix, y_label_prefix=str(sigma_N)+y_label_prefix,
                                         plot_type=cfg.plot_type,
                                         relative_time=cfg.relative_time,
                                         colors=colors, labels=labels, ls=ls)
-
+        TrajectoryPlotUtils.ax_plot_pos(ax=ax, ts=ts, xs=-xs, ys=-ys, zs=-zs, dist_vec=dist_vec,
+                                        x_label_prefix=x_label_prefix, y_label_prefix=str(sigma_N)+y_label_prefix,
+                                        plot_type=cfg.plot_type,
+                                        relative_time=cfg.relative_time,
+                                        colors=colors, labels=labels, ls=ls)
 
     def plot_pos_orient_cov(self, cfg=TrajectoryPlotConfig(), fig=None, angles=False, plot_angle=False):
         assert (isinstance(cfg, TrajectoryPlotConfig))

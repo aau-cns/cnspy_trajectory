@@ -22,75 +22,62 @@
 import os
 import unittest
 import math
+
+from cnspy_spatial_csv_formats.CSVSpatialFormat import CSVSpatialFormat
+from cnspy_spatial_csv_formats.CSVSpatialFormatType import CSVSpatialFormatType
+from cnspy_spatial_csv_formats.ErrorRepresentationType import ErrorRepresentationType
+from cnspy_spatial_csv_formats.EstimationErrorType import EstimationErrorType
+from cnspy_trajectory.TrajectoryErrorType import TrajectoryErrorType
 from cnspy_trajectory.TrajectoryPlotter import *
 
 SAMPLE_DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'sample_data')
 
 class TrajectoryPlotter_Test(unittest.TestCase):
-    def load_trajectory_from_CSV(self):
+    def load_trajectory_gt_from_CSV(self):
         traj = Trajectory()
         traj.load_from_CSV(filename=str(SAMPLE_DATA_DIR + '/ID1-pose-gt.csv')) 
         self.assertFalse(traj.is_empty())
         return traj
 
-    def load_trajectory2_from_CSV(self):
+    def load_trajectory_posorient_from_CSV(self):
         traj = TrajectoryEstimated()
         traj.load_from_CSV(filename=str(SAMPLE_DATA_DIR + '/ID1-pose-est-posorient-cov.csv'))
         self.assertFalse(traj.is_empty())
         return traj
 
-    def test_plot_3D(self):
-        traj = self.load_trajectory_from_CSV()
+    def load_gt_est_err(self):
+        traj_gt = Trajectory()
+        traj_gt.load_from_CSV(filename=str(SAMPLE_DATA_DIR + '/ID1-pose-gt.csv'))
+        traj_est = TrajectoryEstimated()
+        traj_est.load_from_CSV(filename=str(SAMPLE_DATA_DIR + '/ID1-pose-est-posorient-cov.csv'))
+        traj_est.format = CSVSpatialFormat(fmt_type=CSVSpatialFormatType.PosOrientWithCov,
+                                         est_err_type=EstimationErrorType.type5,
+                                           err_rep_type=ErrorRepresentationType.R_small_theta)
+        traj_err = TrajectoryError()
+        traj_err.load_from_CSV(filename=str(SAMPLE_DATA_DIR + '/ID1-pose-err.csv'))
+        traj_err.traj_err_type = TrajectoryErrorType(err_type=EstimationErrorType.type5)
 
-        plotter = TrajectoryPlotter(traj_obj=traj, config=TrajectoryPlotConfig(show=True, close_figure=False,
-                                                                                       save_fn=str(SAMPLE_DATA_DIR + '/../../doc/plot_3D.png')))
-        plotter.plot_3D()
-
-    def test_plot_pose(self):
-        traj = self.load_trajectory_from_CSV()
-
-        plotter = TrajectoryPlotter(traj_obj=traj, config=TrajectoryPlotConfig(show=False, close_figure=False))
-        plotter.plot_pose()
-        plotter.plot_pose(angles=True)
-        plotter.config.radians = False
-        plotter.plot_pose(angles=True)
-        plotter.plot_pose(angles=True, cfg=TrajectoryPlotConfig(show=False,
-                                                                close_figure=False,
-                                                                radians=False,
-                                                                plot_type=TrajectoryPlotTypes.plot_2D_over_t))
-        print('done')
-
-    def test_plot_pose2(self):
-        traj = self.load_trajectory_from_CSV()
-
-        plotter = TrajectoryPlotter(traj_obj=traj, config=TrajectoryPlotConfig(show=False, close_figure=False))
-        plotter.plot_pose(plot_angle=True, cfg=TrajectoryPlotConfig(show=True,
-                                                                close_figure=False,
-                                                                radians=False,
-                                                                plot_type=TrajectoryPlotTypes.plot_2D_over_t))
-        plotter.plot_pose(plot_angle=True, cfg=TrajectoryPlotConfig(show=True,
-                                                                close_figure=False,
-                                                                radians=True,
-                                                                plot_type=TrajectoryPlotTypes.plot_2D_over_t))
-        print('test_plot_pose2 done')
+        return traj_gt, traj_est, traj_err
 
     def test_plot_multi(self):
-        plotter1 = TrajectoryPlotter(traj_obj=self.load_trajectory_from_CSV(),
-                                     config=TrajectoryPlotConfig(num_points=120000))
-        plotter2 = TrajectoryPlotter(traj_obj=self.load_trajectory2_from_CSV())
 
-        TrajectoryPlotter.multi_plot_3D([plotter1, plotter2], cfg=TrajectoryPlotConfig(show=True,
-                                                                                       save_fn=str(SAMPLE_DATA_DIR + '/../../doc/multi.png'),
-                                                                                       view_angle=(40, 20)),
-                                        name_list=['gt', 'est'])
+        traj_gt = self.load_trajectory_gt_from_CSV()
+        traj_est = self.load_trajectory_posorient_from_CSV()
+        cfg = TrajectoryPlotConfig(show=True,
+                                   save_fn=str(SAMPLE_DATA_DIR + '/../../doc/multi.png'),
+                                   view_angle=(40, 20))
+        TrajectoryPlotter.multi_plot_3D([traj_gt, traj_est], cfg=cfg, name_list=['gt', 'est'])
 
-    def test_plot_estimated_traj(self):
-        plotter = TrajectoryPlotter(traj_obj=self.load_trajectory2_from_CSV())
-        plotter.plot_pose(angles=True, cfg=TrajectoryPlotConfig(radians=False,
-                                                                plot_type=TrajectoryPlotTypes.plot_2D_over_t,
-                                                                save_fn=str(SAMPLE_DATA_DIR + '/../../doc/pose_plot.png')))
-        plotter.plot_3D()
-        print('done')
+    def test_full_error_plot(self):
+        traj_gt, traj_est, traj_err = self.load_gt_est_err()
+        cfg = TrajectoryPlotConfig(show=True,
+                                   close_figure=False,
+                                   save_fn=str(SAMPLE_DATA_DIR + '/../../doc/traj_plotter_full_err.png'),
+                                   view_angle=(40, 20))
+
+        TrajectoryPlotter.plot_pose_err_cov(traj_est=traj_est, traj_err=traj_err, traj_gt=traj_gt, cfg=cfg)
+
+
 
 
 if __name__ == "__main__":

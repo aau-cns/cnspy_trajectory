@@ -136,14 +136,10 @@ class TrajectoryError(Trajectory):
 
 
     @staticmethod
-    def plot_pose_err(traj_est, traj_err, fig=None, cfg=None, angles=False, traj_gt=None):
+    def plot_pose_err(traj_est, traj_err, fig=None, cfg=None, angles=False, plot_rpy=False, traj_gt=None):
         assert(isinstance(traj_err, TrajectoryError))
         assert(isinstance(traj_est, Trajectory))
-
-        if cfg is None:
-            cfg = traj_est.config
-        else:
-            assert (isinstance(cfg, TrajectoryPlotConfig))
+        assert (isinstance(cfg, TrajectoryPlotConfig))
 
         if fig is None:
             fig = plt.figure(figsize=(20, 15), dpi=int(cfg.dpi))
@@ -174,7 +170,10 @@ class TrajectoryError(Trajectory):
                 traj_gt.ax_plot_rpy(ax=ax3, cfg=cfg, colors=['k', 'k', 'k'],
                                     ls=PlotLineStyle(linestyle='-.', linewidth=0.5))
 
-            traj_err.ax_plot_angle(ax=ax4, cfg=cfg)
+            if plot_rpy:
+                traj_err.ax_plot_rpy(ax=ax4, cfg=cfg)
+            else:
+                traj_err.ax_plot_angle(ax=ax4, cfg=cfg)
 
             if cfg.radians:
                 ax3.set_ylabel('rotation est [rad]')
@@ -194,6 +193,7 @@ class TrajectoryError(Trajectory):
         ax2.grid(visible=True)
         ax3.grid(visible=True)
         ax4.grid(visible=True)
+
         TrajectoryPlotConfig.show_save_figure(cfg, fig)
 
         return fig, ax1, ax2, ax3, ax4

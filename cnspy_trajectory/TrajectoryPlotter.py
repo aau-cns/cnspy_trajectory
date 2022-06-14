@@ -22,6 +22,7 @@
 import os
 import numpy as np
 import math
+import copy
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # <--- This is important for 3d plotting
 # from mpl_toolkits.mplot3d import Axes3D  # <--- This is important for 3d plotting (copy, if accidentally auto-removed)
@@ -31,6 +32,7 @@ from cnspy_csv2dataframe.TUMCSV2DataFrame import TUMCSV2DataFrame
 from cnspy_csv2dataframe.CSV2DataFrame import CSV2DataFrame
 from cnspy_trajectory.Trajectory import Trajectory
 from cnspy_trajectory.TrajectoryEstimated import TrajectoryEstimated
+from cnspy_trajectory.TrajectoryError import TrajectoryError
 from cnspy_trajectory.TrajectoryPlotConfig import TrajectoryPlotConfig
 from cnspy_trajectory.PlotLineStyle import PlotLineStyle
 from cnspy_trajectory.TrajectoryPlotTypes import TrajectoryPlotTypes
@@ -49,6 +51,27 @@ from cnspy_trajectory.SpatialConverter import SpatialConverter
 class TrajectoryPlotter:
 
     @staticmethod
+    def plot_pose_err_cov(traj_est, traj_err, cfg, fig=None, traj_gt=None):
+        assert (isinstance(traj_est, TrajectoryEstimated))
+        assert (isinstance(traj_err, TrajectoryError))
+        assert (isinstance(cfg, TrajectoryPlotConfig))
+
+        # disable functionality
+        cfg_ = copy.deepcopy(cfg)
+        cfg_.show = False
+        cfg_.close = False
+        cfg_.save_fn = None
+        fig, ax1, ax2, ax3, ax4 = TrajectoryError.plot_pose_err(traj_est=traj_est, traj_err=traj_err,
+                                                                cfg=cfg_, fig=fig,
+                                                                angles=True, plot_rpy=True,
+                                                                traj_gt=traj_gt)
+        traj_est.ax_plot_p_sigma(ax2, cfg=cfg_, colors=['k', 'k', 'k'], ls=PlotLineStyle(linestyle='-.', linewidth=0.5))
+        traj_est.ax_plot_rpy_sigma(ax4, cfg=cfg_, colors=['k', 'k', 'k'], ls=PlotLineStyle(linestyle='-.', linewidth=0.5))
+
+        TrajectoryPlotConfig.show_save_figure(cfg, fig)
+        return fig, ax1, ax2, ax3, ax4
+
+    @staticmethod
     def multi_plot_3D(traj_list, cfg, name_list=[]):
         assert (isinstance(cfg, TrajectoryPlotConfig))
         num_plots = len(traj_list)
@@ -63,7 +86,7 @@ class TrajectoryPlotter:
 
         idx = 0
         for traj in traj_list:
-            traj.ax_plot_pos_3D(ax=ax, label=name_list[idx])
+            traj.ax_plot_pos_3D(ax=ax, cfg=cfg, label=name_list[idx])
             idx += 1
 
         ax.legend(shadow=True, fontsize='x-small')
