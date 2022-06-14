@@ -27,7 +27,7 @@ from cnspy_csv2dataframe.TUMCSV2DataFrame import TUMCSV2DataFrame
 from cnspy_csv2dataframe.CSV2DataFrame import CSV2DataFrame
 from cnspy_spatial_csv_formats.CSVSpatialFormatType import CSVSpatialFormatType
 from cnspy_spatial_csv_formats.EstimationErrorType import EstimationErrorType
-from cnspy_trajectory import TrajectoryPlotTypes
+from cnspy_trajectory.SpatialConverter import SpatialConverter
 from cnspy_trajectory.PlotLineStyle import PlotLineStyle
 from cnspy_trajectory.Trajectory import Trajectory
 from cnspy_trajectory.TrajectoryErrorType import TrajectoryErrorType
@@ -35,42 +35,56 @@ from cnspy_trajectory.TrajectoryPlotUtils import TrajectoryPlotUtils, Trajectory
 
 
 class TrajectoryError(Trajectory):
-    traj_err_type = None # TrajectoryErrorType
+    # p_vec: position error vector defined via "error_type" [m]
+    # q_vec: rotation error defined via "error_type"  [quaternion]
 
-    def __init__(self, t_vec=None, p_vec=None, q_vec=None,
+    traj_err_type = None # TrajectoryErrorType
+    scale = 1.0          # position scale factor
+
+    # private metrics:
+    # force access to ARMSE via method get_ARMSE()!
+    __p_RMSE_vec = None       # norm of position error vector [m]
+    __q_RMSE_deg_vec = None   # rotation error angle (phi of axang) [deg]
+    __ARMSE_p = None          # [m]
+    __ARMSE_q_deg = None      # [deg]
+
+    def __init__(self, t_vec=None, p_vec=None, q_vec=None, scale=1.0,
                  traj_err_type=TrajectoryErrorType(err_type=EstimationErrorType.type1)):
         Trajectory.__init__(self, t_vec=t_vec, p_vec=p_vec, q_vec=q_vec)
         self.traj_err_type = traj_err_type
-        self.ARMSE_p = 0.
-        self.ARMSE_q_deg = 0.
+        self.scale = scale
 
-    # TODO: plot leads to a circular dependency!
-    # def plot(self, fig=None, cfg=TrajectoryPlotConfig()):
-    #     plotter = TrajectoryPlotter(traj_obj=self, config=cfg)
-    #
-    #     if fig is None:
-    #         fig = plt.figure(figsize=(20, 15), dpi=int(cfg.dpi))
-    #     # create 2x2 grid
-    #     ax1 = fig.add_subplot(211)
-    #     ax2 = fig.add_subplot(212)
-    #     plotter.ax_plot_pos(ax=ax1, cfg=cfg)
-    #     plotter.ax_plot_angle(ax=ax2, cfg=cfg)
-    #
-    #     p_err_text, R_err_text = self.traj_err_type.error_def()
-    #     # Error type text:
-    #     text_p_err = 'local '
-    #     if not self.traj_err_type.is_local_position_error():
-    #         text_p_err = 'global '
-    #     # Error type text:
-    #     text_R_err = 'local '
-    #     if not self.traj_err_type.is_local_position_error():
-    #         text_R_err = 'global '
-    #
-    #     ax1.set_ylabel(text_p_err + 'position err [m] ' + p_err_text)
-    #     if cfg.radians:
-    #         ax2.set_ylabel(text_R_err + 'rotation err [rad] ' + R_err_text)
-    #     else:
-    #         ax2.set_ylabel(text_R_err + 'rotation err [deg] ' + R_err_text)
+    def get_ARMSE(self):
+        if self.__ARMSE_p is None or self.__ARMSE_q_deg is None:
+            self.compute_ARMSE()
+        return self.__ARMSE_p, self.__ARMSE_q_deg
+
+    def compute_ARMSE(self):
+        if self.__p_RMSE_vec is None or self.__q_RMSE_deg_vec is None:
+            self.__p_RMSE_vec = TrajectoryError.compute_RMSE_p_vec(self.p_vec)
+            a, self.__q_RMSE_deg_vec = TrajectoryError.compute_RMSE_q_vec(self.q_vec)
+
+        self.__ARMSE_p = np.mean(self.__p_RMSE_vec)
+        self.__ARMSE_q_deg = np.mean(self.__q_RMSE_deg_vec)
+
+    @staticmethod
+    def compute_RMSE_p_vec(p_err_arr):
+        return np.sqrt(np.sum(p_err_arr ** 2, 1))
+
+    @staticmethod
+    def compute_RMSE_q_vec(q_err_arr):
+        length = np.shape(q_err_arr)[0]
+        rmse_rad_vec = np.zeros((length, 1))
+        for i in range(length):
+            R_SO3 = SpatialConverter.HTMQ_quaternion_to_SO3(q_err_arr[i, :])
+            # Eq. 24 in Zhang and Scaramuzza [1]
+            # Bi-invariate metric for rotations (length of geodesic on unit-sphere from identity element) [3]
+            [theta, v] = R_SO3.angvec()
+            rmse_rad_vec[i, :] = abs(theta)
+
+        rmse_deg_vec = np.rad2deg(rmse_rad_vec)
+        return rmse_rad_vec, rmse_deg_vec
+
 
     #def load_from_DataFrame(self, df):
     #    print('currently not supported! We need a CSV Format with EstErrorType first')
@@ -109,8 +123,8 @@ class TrajectoryError(Trajectory):
         self.ax_plot_pos(ax=ax, cfg=cfg)
 
         [p_err_text, R_err_text] = self.traj_err_type.error_def()
-
-        ax.set_ylabel(p_err_text + ' ARMSE ={:.2f} [m]'.format(self.ARMSE_p))
+        ARMSE_p, ARMSE_q_deg = self.get_ARMSE()
+        ax.set_ylabel(p_err_text + ' ARMSE ={:.2f} [m]'.format(ARMSE_p))
 
         TrajectoryPlotConfig.show_save_figure(cfg, fig)
         return fig, ax
@@ -124,11 +138,11 @@ class TrajectoryError(Trajectory):
         self.ax_plot_rpy(ax=ax, cfg=cfg)
 
         [p_err_text, R_err_text] = self.traj_err_type.error_def()
-
+        ARMSE_p, ARMSE_q_deg = self.get_ARMSE()
         if cfg.radians:
-            ax.set_ylabel(R_err_text + ' ARMSE ={:.2f} [rad]'.format(np.deg2rad(self.ARMSE_q_deg)))
+            ax.set_ylabel(R_err_text + ' ARMSE ={:.2f} [rad]'.format(np.deg2rad(ARMSE_q_deg)))
         else:
-            ax.set_ylabel(R_err_text + ' ARMSE ={:.2f} [deg]'.format(self.ARMSE_q_deg))
+            ax.set_ylabel(R_err_text + ' ARMSE ={:.2f} [deg]'.format(ARMSE_q_deg))
 
         TrajectoryPlotConfig.show_save_figure(cfg, fig)
         return fig, ax
