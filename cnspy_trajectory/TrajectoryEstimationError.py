@@ -21,6 +21,8 @@ from cnspy_spatial_csv_formats.ErrorRepresentationType import ErrorRepresentatio
 from cnspy_spatial_csv_formats.EstimationErrorType import EstimationErrorType
 from cnspy_trajectory.Trajectory import Trajectory
 
+
+# - TODO: save and load to CSV file and DataFrame: introduce new format!
 class TrajectoryEstimationError(Trajectory):
     # p_vec: position error vector defined via "error_type" [m]
     # q_vec: rotation error defined via "error_type"  [quaternion]
@@ -33,6 +35,12 @@ class TrajectoryEstimationError(Trajectory):
                  est_err_type=EstimationErrorType.type1,
                  err_rep_type=ErrorRepresentationType.R_small_theta):
         Trajectory.__init__(self, t_vec=t_vec, p_vec=p_vec, q_vec=q_vec)
+
+        p_rows, p_cols = p_vec.shape
+        theta_rows, theta_cols = theta_q_vec.shape
+        assert (theta_rows == p_rows)
+        assert (theta_cols == 3)
+
         self.est_err_type = est_err_type
         self.err_rep_type = err_rep_type
         self.theta_q_vec = theta_q_vec

@@ -51,7 +51,7 @@ class TrajectoryPlotter_Test(unittest.TestCase):
         traj_est = TrajectoryEstimated()
         traj_est.load_from_CSV(filename=str(SAMPLE_DATA_DIR + '/ID1-pose-est-posorient-cov.csv'))
         traj_est.format = CSVSpatialFormat(fmt_type=CSVSpatialFormatType.PosOrientWithCov,
-                                         est_err_type=EstimationErrorType.type5,
+                                           est_err_type=EstimationErrorType.type5,
                                            err_rep_type=ErrorRepresentationType.R_small_theta)
         traj_err = TrajectoryError()
         traj_err.load_from_CSV(filename=str(SAMPLE_DATA_DIR + '/ID1-pose-err.csv'))
