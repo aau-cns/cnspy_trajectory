@@ -25,6 +25,8 @@
 import numpy as np
 from spatialmath import UnitQuaternion, SO3, SE3, Quaternion, base
 
+from cnspy_spatial_csv_formats.ErrorRepresentationType import ErrorRepresentationType
+
 
 class SpatialConverter:
     """
@@ -192,3 +194,26 @@ class SpatialConverter:
     def rot2theta_R(R):
         # R = I + skew(theta_R)
         return base.vex(R - np.eye(3))
+
+    @staticmethod
+    def convert_q_vec_to_theta_vec(q_vec, rot_err_rep):
+        assert (isinstance(rot_err_rep, ErrorRepresentationType))
+        # q_vec as vector of  HTMQ_quaternions
+        len, q_cols = q_vec.shape
+        assert(q_cols == 4)
+        theta_vec = np.zeros((len, 3))
+
+        # Converts quaternion to small angle approximations
+        if rot_err_rep == ErrorRepresentationType.R_small_theta:
+            for i in range(len):
+                theta_vec[i] = SpatialConverter.quat2theta_R(q_vec[i])
+        elif rot_err_rep == ErrorRepresentationType.q_small_theta:
+            for i in range(len):
+                theta_vec[i] = SpatialConverter.quat2theta_q(q_vec[i])
+        elif rot_err_rep == ErrorRepresentationType.so3_theta:
+            for i in range(len):
+                theta_vec[i] = SpatialConverter.quat2theta_so3(q_vec[i])
+        else:
+            assert False, 'format is not supported: ' + str(rot_err_rep)
+
+        return theta_vec

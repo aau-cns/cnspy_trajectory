@@ -24,6 +24,8 @@
 ########################################################################################################################
 import numpy as np
 from spatialmath import UnitQuaternion, SO3, SE3, Quaternion, base
+
+from cnspy_spatial_csv_formats.ErrorRepresentationType import ErrorRepresentationType
 from cnspy_trajectory.SpatialConverter import SpatialConverter
 import unittest
 
@@ -119,6 +121,23 @@ class SpatialConverter_Test(unittest.TestCase):
         R_ = SpatialConverter.theta_R2rot(theta_R)
         print(R_ref - R_)
 
+
+    def test_convert_q_vec_to_theta_vec(self):
+        len = 10
+        q_vec = np.zeros((len, 4))
+
+        for i in range(len):
+            q_vec[i] = SpatialConverter.SO3_to_HTMQ_quaternion(SO3.RPY([i, -i, i*2], unit='deg'))
+
+        theta_R_vec = SpatialConverter.convert_q_vec_to_theta_vec(q_vec,
+                                                                  rot_err_rep=ErrorRepresentationType.R_small_theta)
+        theta_q_vec = SpatialConverter.convert_q_vec_to_theta_vec(q_vec,
+                                                                  rot_err_rep=ErrorRepresentationType.q_small_theta)
+        theta_so3_vec = SpatialConverter.convert_q_vec_to_theta_vec(q_vec,
+                                                                  rot_err_rep=ErrorRepresentationType.so3_theta)
+        print('\ntheta_R:\n' + str(theta_R_vec))
+        print('\ntheta_q:\n' + str(theta_q_vec))
+        print('\ntheta_so3:\n' + str(theta_so3_vec))
 
 if __name__ == "__main__":
     unittest.main()
