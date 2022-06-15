@@ -18,11 +18,13 @@
 #
 ########################################################################################################################
 import os
+from sys import version_info
 
 import numpy as np
 import pandas
 import matplotlib.pyplot as plt
 
+from cnspy_csv2dataframe.PoseTypedStamped2DataFrame import PoseTypedStamped2DataFrame
 from cnspy_csv2dataframe.TUMCSV2DataFrame import TUMCSV2DataFrame
 from cnspy_csv2dataframe.CSV2DataFrame import CSV2DataFrame
 from cnspy_spatial_csv_formats.CSVSpatialFormatType import CSVSpatialFormatType
@@ -33,11 +35,11 @@ from cnspy_trajectory.Trajectory import Trajectory
 from cnspy_trajectory.TrajectoryErrorType import TrajectoryErrorType
 from cnspy_trajectory.TrajectoryPlotUtils import TrajectoryPlotUtils, TrajectoryPlotConfig
 
-
+# TODO: saving looks strange! [1.0],['type1']
 class TrajectoryError(Trajectory):
     # p_vec: position error vector defined via "error_type" [m]
     # q_vec: rotation error defined via "error_type"  [quaternion]
-
+    format_type = CSVSpatialFormatType.PoseTypedStamped
     traj_err_type = None # TrajectoryErrorType
     scale = 1.0          # position scale factor
 
@@ -49,10 +51,17 @@ class TrajectoryError(Trajectory):
     __ARMSE_q_deg = None      # [deg]
 
     def __init__(self, t_vec=None, p_vec=None, q_vec=None, scale=1.0,
-                 traj_err_type=TrajectoryErrorType(err_type=EstimationErrorType.type1)):
+                 traj_err_type=TrajectoryErrorType(err_type=EstimationErrorType.type1),
+                 df=None, fn=None):
         Trajectory.__init__(self, t_vec=t_vec, p_vec=p_vec, q_vec=q_vec)
         self.traj_err_type = traj_err_type
         self.scale = scale
+
+        if df is not None:
+            self.load_from_DataFrame(df)
+        elif fn is not None:
+            self.load_from_CSV(fn)
+        pass
 
     def get_ARMSE(self):
         if self.__ARMSE_p is None or self.__ARMSE_q_deg is None:
@@ -85,32 +94,31 @@ class TrajectoryError(Trajectory):
         rmse_deg_vec = np.rad2deg(rmse_rad_vec)
         return rmse_rad_vec, rmse_deg_vec
 
+    def load_from_DataFrame(self, df, fmt_type=None):
+        assert (isinstance(df, pandas.DataFrame))
+        if fmt_type is None:
+            fmt_type = CSV2DataFrame.identify_format(dataframe=df)
+        else:
+            assert (isinstance(fmt_type, CSVSpatialFormatType))
 
-    #def load_from_DataFrame(self, df):
-    #    print('currently not supported! We need a CSV Format with EstErrorType first')
-    #    assert False
-        #self.t_vec, self.p_vec, self.q_vec = TUMCSV2DataFrame.from_DataFrame(data_frame=df)
+        est_err_type = EstimationErrorType.none
+        if fmt_type == CSVSpatialFormatType.PoseStamped:
+            self.t_vec, self.p_vec, self.q_vec = \
+                TUMCSV2DataFrame.from_DataFrame(df)
+            self.scale = 1.0
+        elif fmt_type == CSVSpatialFormatType.PoseTypedStamped:
+            self.t_vec, self.p_vec, self.q_vec, scale_vec, est_err_type_vec = \
+                PoseTypedStamped2DataFrame.from_DataFrame(df)
+            self.scale = scale_vec[0]
+            est_err_type = EstimationErrorType(est_err_type_vec[0])
 
-    #def to_DataFrame(self):
-    #    print('currently not supported! We need a CSV Format with EstErrorType first')
-    #    assert False
-        #return TUMCSV2DataFrame.to_DataFrame(self.t_vec, self.p_vec, self.q_vec)
+        self.traj_err_type = TrajectoryErrorType(est_err_type)
+        self.format_type = fmt_type
 
-    def load_from_CSV(self, filename):
-        if not os.path.isfile(filename):
-            print("Trajectory: could not find file %s" % os.path.abspath(filename))
-            return False
-
-        loader = CSV2DataFrame(fn=filename)
-        self.load_from_DataFrame(loader.data_frame)
-        return loader.data_loaded
-
-    def save_to_CSV(self, filename):
-        if self.is_empty():
-            return False
-        df = self.to_DataFrame()
-        TUMCSV2DataFrame.save_CSV(df, filename=filename, fmt=CSVSpatialFormatType.TUM)
-        return True
+    def to_DataFrame(self):
+        est_err_type_vec = np.tile(str(self.traj_err_type.err_type), (self.num_elems(), 1))
+        scale_vec = np.tile(self.scale, (self.num_elems(), 1))
+        return PoseTypedStamped2DataFrame.to_DataFrame(self.t_vec, self.p_vec, self.q_vec, scale_vec, est_err_type_vec)
 
     ########### PLOTTING #################
     def plot_p_err(self, cfg=TrajectoryPlotConfig(), fig=None, ax=None):
