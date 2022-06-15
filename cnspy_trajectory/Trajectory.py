@@ -30,6 +30,7 @@ from spatialmath import base, SE3
 from cnspy_csv2dataframe.TUMCSV2DataFrame import TUMCSV2DataFrame
 from cnspy_csv2dataframe.CSV2DataFrame import CSV2DataFrame
 from cnspy_spatial_csv_formats.CSVSpatialFormatType import CSVSpatialFormatType
+from cnspy_trajectory.TrajectoryBase import TrajectoryBase
 from cnspy_trajectory.PlotLineStyle import PlotLineStyle
 from cnspy_trajectory.TrajectoryPlotConfig import TrajectoryPlotConfig
 from cnspy_trajectory.TrajectoryPlotTypes import TrajectoryPlotTypes
@@ -39,10 +40,10 @@ from cnspy_trajectory.SpatialConverter import SpatialConverter
 from cnspy_trajectory.pyplot_utils import set_axes_equal
 
 
-class Trajectory:
+class Trajectory(TrajectoryBase):
+    #t_vec = None
     p_vec = None
     q_vec = None
-    t_vec = None
     dist = None  # cache
 
     def __init__(self, t_vec=None, p_vec=None, q_vec=None, df=None):
@@ -55,6 +56,7 @@ class Trajectory:
             q_vec -- [Nx4] matrix, containing quaternions [x,y,z,w]
             df -- pandas.DataFrame holding a table with ['t', 'tx', 'ty', 'tz','qx', 'qy', 'qz', 'qw']
         """
+        TrajectoryBase.__init__(self)
         if df is not None:
             self.load_from_DataFrame(df)
         elif t_vec is not None and p_vec is not None and q_vec is not None:
@@ -74,36 +76,13 @@ class Trajectory:
             self.p_vec = p_vec
             self.q_vec = q_vec
 
-    def load_from_CSV(self, filename):
-        if not os.path.isfile(filename):
-            print("Trajectory: could not find file %s" % os.path.abspath(filename))
-            return False
-
-        loader = CSV2DataFrame(fn=filename)
-        self.load_from_DataFrame(loader.data_frame)
-        return loader.data_loaded
-
-    def load_from_DataFrame(self, df):
+    # overriding abstract method
+    def load_from_DataFrame(self, df, fmt_type=None):
         self.t_vec, self.p_vec, self.q_vec = TUMCSV2DataFrame.from_DataFrame(data_frame=df)
 
+    # overriding abstract method
     def to_DataFrame(self):
         return TUMCSV2DataFrame.to_DataFrame(self.t_vec, self.p_vec, self.q_vec)
-
-    def save_to_CSV(self, filename):
-        if self.is_empty():
-            return False
-        df = TUMCSV2DataFrame.to_DataFrame(self.t_vec, self.p_vec, self.q_vec)
-        TUMCSV2DataFrame.save_CSV(df, filename=filename, fmt=CSVSpatialFormatType.TUM)
-        return True
-
-    def is_empty(self):
-        return self.t_vec is None
-
-    def num_elems(self):
-        if self.is_empty():
-            return 0
-        else:
-            return len(self.t_vec)
 
     def get_distance(self):
         if self.p_vec is not None:
@@ -353,11 +332,11 @@ class Trajectory:
     def ax_plot_frames_3D(self, ax, cfg, plot_origin=True, origin_name="0", num_markers=0):
         assert (isinstance(cfg, TrajectoryPlotConfig))
 
-        if plot_origin and not self.traj_obj.is_empty():
+        if plot_origin and not self.is_empty():
             T = SE3(self.p_vec[0, 0], self.p_vec[0, 1], self.p_vec[0, 2])
             base.trplot(T.A, axes=ax, frame=origin_name, rviz=True, length=1, width=0.2, block=False)
 
-        if num_markers > 0 and not self.traj_obj.is_empty():
+        if num_markers > 0 and not self.is_empty():
             for i in range(1, self.num_elems(), int(self.num_elems() / num_markers)):
                 T_i = SpatialConverter.p_q_HTMQ_to_SE3(self.p_vec[i, :], self.q_vec[i, :])
                 base.trplot(T_i.A, axes=ax, rviz=True,
