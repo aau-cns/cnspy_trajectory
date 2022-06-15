@@ -46,7 +46,7 @@ class Trajectory(TrajectoryBase):
     q_vec = None
     dist = None  # cache
 
-    def __init__(self, t_vec=None, p_vec=None, q_vec=None, df=None):
+    def __init__(self, t_vec=None, p_vec=None, q_vec=None, df=None, fn=None):
         """
             CTOR expects either a pandas.DataFrame or a (timestamp + position + quaternion) matrix
 
@@ -59,6 +59,8 @@ class Trajectory(TrajectoryBase):
         TrajectoryBase.__init__(self)
         if df is not None:
             self.load_from_DataFrame(df)
+        elif fn is not None:
+            self.load_from_CSV(fn=fn)
         elif t_vec is not None and p_vec is not None and q_vec is not None:
             if t_vec.ndim == 1:
                 t_vec = np.array([t_vec])
