@@ -25,6 +25,8 @@ import pandas
 import matplotlib.pyplot as plt
 from spatialmath import base
 
+from cnspy_csv2dataframe.PosOrientWithCovTyped2DataFrame import PosOrientWithCovTyped2DataFrame
+from cnspy_csv2dataframe.PoseWithCovTyped2DataFrame import PoseWithCovTyped2DataFrame
 from cnspy_trajectory.PlotLineStyle import PlotLineStyle
 from cnspy_trajectory.SpatialConverter import SpatialConverter
 from cnspy_trajectory.Trajectory import Trajectory
@@ -39,7 +41,7 @@ from cnspy_spatial_csv_formats.ErrorRepresentationType import ErrorRepresentatio
 from cnspy_trajectory.TrajectoryPlotConfig import TrajectoryPlotConfig
 from cnspy_trajectory.TrajectoryPlotUtils import TrajectoryPlotUtils
 
-
+# TODO: make TrajectoryEstimatedBase and derive TrajEstPose and TrajEstPosOrient
 class TrajectoryEstimated(Trajectory):
     # position uncertainty: 3x3 covariance matrix.
     # The with upper triangular elements are vectorized: 'pxx', 'pxy', 'pxz', 'pyy', 'pyz', 'pzz'
@@ -57,13 +59,12 @@ class TrajectoryEstimated(Trajectory):
 
     # EstimationErrorType: specifies global or local definitions of the uncertainty (Sigma_p/q_vec)
     # ErrorRepresentationType: specifies the uncertainty of the rotation (Sigma_R_vec)
-    format = CSVSpatialFormat(est_err_type=EstimationErrorType.type5,
-                              err_rep_type=ErrorRepresentationType.theta_R)
+    format = CSVSpatialFormat()
 
     def __init__(self, t_vec=None, p_vec=None, q_vec=None,
                  Sigma_p_vec=None, Sigma_R_vec=None,
                  Sigma_pR_vec=None, Sigma_T_vec=None,
-                 df=None, fmt=None):
+                 df=None, fn=None):
         Trajectory.__init__(self, t_vec=t_vec, p_vec=p_vec, q_vec=q_vec)
         self.Sigma_p_vec = Sigma_p_vec
         self.Sigma_R_vec = Sigma_R_vec
@@ -72,46 +73,53 @@ class TrajectoryEstimated(Trajectory):
 
         if df is not None:
             self.load_from_DataFrame(df)
-
-        if fmt is not None:
-            self.set_format(fmt)
+        elif fn is not None:
+            self.load_from_CSV(fn)
+        pass
 
     def set_format(self, fmt):
         if fmt is not None and isinstance(fmt, CSVSpatialFormat):
             self.format = fmt
+        elif fmt is not None and isinstance(fmt, CSVSpatialFormatType):
+            self.format = CSVSpatialFormat(fmt_type=fmt)
 
     def get_format(self):
         return self.format
 
-    def load_from_CSV(self, filename):
-        if not os.path.isfile(filename):
-            print("Trajectory: could not find file %s" % os.path.abspath(filename))
-            return False
-
-        loader = CSV2DataFrame(fn=filename)
-        if loader.data_loaded:
-            self.load_from_DataFrame(df=loader.data_frame, fmt=loader.format)
-            return True
-
-        return False
-
-    def load_from_DataFrame(self, df, fmt=None):
+    def load_from_DataFrame(self, df, fmt_type=None):
         assert (isinstance(df, pandas.DataFrame))
-        if fmt is None:
-            fmt = self.format
+        if fmt_type is None:
+            fmt_type = CSV2DataFrame.identify_format(dataframe=df)
         else:
-            self.set_format(fmt)
+            assert (isinstance(fmt_type, CSVSpatialFormatType))
 
+        err_rep_type = ErrorRepresentationType.none
+        est_err_type = EstimationErrorType.none
         # TODO: different uncertainties can be loaded! either full pose covariance or position and orientation separated
-        if fmt.type == CSVSpatialFormatType.PosOrientWithCov:
-            self.t_vec, self.p_vec, self.q_vec, self.Sigma_p_vec, \
-                self.Sigma_R_vec = PosOrientWithCov2DataFrame.from_DataFrame(data_frame=df)
-        elif fmt.type == CSVSpatialFormatType.PoseWithCov:
+        if fmt_type == CSVSpatialFormatType.PosOrientWithCov:
+            self.t_vec, self.p_vec, self.q_vec, self.Sigma_p_vec, self.Sigma_R_vec = \
+                PosOrientWithCov2DataFrame.from_DataFrame(data_frame=df)
+        elif fmt_type == CSVSpatialFormatType.PoseWithCov:
             self.t_vec, self.p_vec, self.q_vec, self.Sigma_T_vec = \
                 PoseWithCov2DataFrame.from_DataFrame(data_frame=df)
+        elif fmt_type == CSVSpatialFormatType.PoseStamped or fmt_type == CSVSpatialFormatType.TUM:
+            self.t_vec, self.p_vec, self.q_vec = TUMCSV2DataFrame.from_DataFrame(data_frame=df)
+        elif fmt_type == CSVSpatialFormatType.PosOrientWithCovTyped:
+            self.t_vec, self.p_vec, self.q_vec, self.Sigma_p_vec, self.Sigma_R_vec, \
+            est_err_type_vec, err_rep_vec = PosOrientWithCovTyped2DataFrame.from_DataFrame(data_frame=df)
+            est_err_type = EstimationErrorType(est_err_type_vec[0])
+            err_rep_type = ErrorRepresentationType(est_err_type_vec[0])
+        elif fmt_type == CSVSpatialFormatType.PoseWithCovTyped:
+            self.t_vec, self.p_vec, self.q_vec, self.Sigma_T_vec, \
+            est_err_type_vec, err_rep_vec = PoseWithCovTyped2DataFrame.from_DataFrame(data_frame=df)
+            est_err_type = EstimationErrorType(est_err_type_vec[0])
+            err_rep_type = ErrorRepresentationType(est_err_type_vec[0])
         else:
             print('Error: format not supported yet')
-            assert(False)
+            return False
+
+        self.set_format(CSVSpatialFormat(fmt_type, est_err_type=est_err_type, err_rep_type=err_rep_type))
+        return True
 
     def to_DataFrame(self):
         if self.format.type == CSVSpatialFormatType.PosOrientWithCov:
@@ -121,16 +129,23 @@ class TrajectoryEstimated(Trajectory):
             return PoseWithCov2DataFrame.to_DataFrame(self.t_vec, self.p_vec, self.q_vec, self.Sigma_T_vec)
         elif self.format.type == CSVSpatialFormatType.TUM:
             return TUMCSV2DataFrame.to_DataFrame(self.t_vec, self.p_vec, self.q_vec)
+        elif self.format.type == CSVSpatialFormatType.PosOrientWithCovTyped:
+            est_err_type_vec = np.tile(self.format.estimation_error_type.str(), (self.num_elems(), 1))
+            err_rep_vec = np.tile(self.format.rotation_error_representation.str(), (self.num_elems(), 1))
+
+            return PosOrientWithCovTyped2DataFrame.to_DataFrame(self.t_vec, self.p_vec, self.q_vec, self.Sigma_p_vec,
+                                                                self.Sigma_R_vec,
+                                                                est_err_type_vec=est_err_type_vec,
+                                                                err_rep_vec=err_rep_vec)
+        elif self.format.type == CSVSpatialFormatType.PoseWithCovTyped:
+            est_err_type_vec = np.tile(self.format.estimation_error_type.str(), (self.num_elems(), 1))
+            err_rep_vec = np.tile(self.format.rotation_error_representation.str(), (self.num_elems(), 1))
+            return PoseWithCovTyped2DataFrame.to_DataFrame(self.t_vec, self.p_vec, self.q_vec, self.Sigma_T_vec,
+                                                           est_err_type_vec=est_err_type_vec,
+                                                           err_rep_vec=err_rep_vec)
         else:
             print('Error: format [' + str(self.format.type) + '] not supported yet')
-            assert (False)
-
-    def save_to_CSV(self, filename):
-        if self.is_empty():
-            return False
-        df = self.to_DataFrame()
-        CSV2DataFrame.save_CSV(df, filename=filename, fmt=self.get_format())
-        return True
+            return pandas.DataFrame()
 
     ####################################################################################################################
     ######### PLOTTING #################################################################################################
