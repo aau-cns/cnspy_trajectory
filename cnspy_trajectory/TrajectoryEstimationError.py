@@ -33,7 +33,7 @@ class TrajectoryEstimationError(Trajectory):
 
     def __init__(self, t_vec=None, p_vec=None, q_vec=None, theta_q_vec=None,
                  est_err_type=EstimationErrorType.type1,
-                 err_rep_type=ErrorRepresentationType.R_small_theta):
+                 err_rep_type=ErrorRepresentationType.theta_R):
         Trajectory.__init__(self, t_vec=t_vec, p_vec=p_vec, q_vec=q_vec)
 
         p_rows, p_cols = p_vec.shape

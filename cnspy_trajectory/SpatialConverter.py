@@ -35,7 +35,8 @@ class SpatialConverter:
       Laboratory for Fluorescence Dynamics, University of California, Irvine (https://pypi.org/project/transformations/)
 
     Problem: the HTMQ quaternion format is non-alphabetic: [x,y,z,w], with w being the scalar part and [x,y,z] the imaginary
-    The spatialmath toolbox (https://github.com/petercorke/spatialmath-python) uses [s, v] ([w, x, y, z]), s = scalar/real part and v = vector/imaginary part
+    The spatialmath toolbox (https://github.com/petercorke/spatialmath-python) uses [s, v] ([w, x, y, z]),
+    s = scalar/real part and v = vector/imaginary part
 
     In general this convert is required from a historical point, as the spatialmath toolbox is pretty new and would
     require to refactor the whole code base (the [x,y,z,w] format is widely used!)
@@ -204,13 +205,13 @@ class SpatialConverter:
         theta_vec = np.zeros((len, 3))
 
         # Converts quaternion to small angle approximations
-        if rot_err_rep == ErrorRepresentationType.R_small_theta:
+        if rot_err_rep == ErrorRepresentationType.theta_R:
             for i in range(len):
                 theta_vec[i] = SpatialConverter.quat2theta_R(q_vec[i])
-        elif rot_err_rep == ErrorRepresentationType.q_small_theta:
+        elif rot_err_rep == ErrorRepresentationType.theta_q:
             for i in range(len):
                 theta_vec[i] = SpatialConverter.quat2theta_q(q_vec[i])
-        elif rot_err_rep == ErrorRepresentationType.so3_theta:
+        elif rot_err_rep == ErrorRepresentationType.theta_so3:
             for i in range(len):
                 theta_vec[i] = SpatialConverter.quat2theta_so3(q_vec[i])
         else:

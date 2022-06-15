@@ -130,11 +130,11 @@ class SpatialConverter_Test(unittest.TestCase):
             q_vec[i] = SpatialConverter.SO3_to_HTMQ_quaternion(SO3.RPY([i, -i, i*2], unit='deg'))
 
         theta_R_vec = SpatialConverter.convert_q_vec_to_theta_vec(q_vec,
-                                                                  rot_err_rep=ErrorRepresentationType.R_small_theta)
+                                                                  rot_err_rep=ErrorRepresentationType.theta_R)
         theta_q_vec = SpatialConverter.convert_q_vec_to_theta_vec(q_vec,
-                                                                  rot_err_rep=ErrorRepresentationType.q_small_theta)
+                                                                  rot_err_rep=ErrorRepresentationType.theta_q)
         theta_so3_vec = SpatialConverter.convert_q_vec_to_theta_vec(q_vec,
-                                                                  rot_err_rep=ErrorRepresentationType.so3_theta)
+                                                                    rot_err_rep=ErrorRepresentationType.theta_so3)
         print('\ntheta_R:\n' + str(theta_R_vec))
         print('\ntheta_q:\n' + str(theta_q_vec))
         print('\ntheta_so3:\n' + str(theta_so3_vec))

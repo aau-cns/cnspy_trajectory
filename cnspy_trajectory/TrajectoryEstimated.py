@@ -58,7 +58,7 @@ class TrajectoryEstimated(Trajectory):
     # EstimationErrorType: specifies global or local definitions of the uncertainty (Sigma_p/q_vec)
     # ErrorRepresentationType: specifies the uncertainty of the rotation (Sigma_R_vec)
     format = CSVSpatialFormat(est_err_type=EstimationErrorType.type5,
-                              err_rep_type=ErrorRepresentationType.R_small_theta)
+                              err_rep_type=ErrorRepresentationType.theta_R)
 
     def __init__(self, t_vec=None, p_vec=None, q_vec=None,
                  Sigma_p_vec=None, Sigma_R_vec=None,
@@ -88,7 +88,7 @@ class TrajectoryEstimated(Trajectory):
             print("Trajectory: could not find file %s" % os.path.abspath(filename))
             return False
 
-        loader = CSV2DataFrame(filename=filename)
+        loader = CSV2DataFrame(fn=filename)
         if loader.data_loaded:
             self.load_from_DataFrame(df=loader.data_frame, fmt=loader.format)
             return True
@@ -105,22 +105,22 @@ class TrajectoryEstimated(Trajectory):
         # TODO: different uncertainties can be loaded! either full pose covariance or position and orientation separated
         if fmt.type == CSVSpatialFormatType.PosOrientWithCov:
             self.t_vec, self.p_vec, self.q_vec, self.Sigma_p_vec, \
-                self.Sigma_R_vec = PosOrientWithCov2DataFrame.DataFrame_to_TPQCov(data_frame=df)
+                self.Sigma_R_vec = PosOrientWithCov2DataFrame.from_DataFrame(data_frame=df)
         elif fmt.type == CSVSpatialFormatType.PoseWithCov:
             self.t_vec, self.p_vec, self.q_vec, self.Sigma_T_vec = \
-                PoseWithCov2DataFrame.DataFrame_to_TPQCov(data_frame=df)
+                PoseWithCov2DataFrame.from_DataFrame(data_frame=df)
         else:
             print('Error: format not supported yet')
             assert(False)
 
     def to_DataFrame(self):
         if self.format.type == CSVSpatialFormatType.PosOrientWithCov:
-            return PosOrientWithCov2DataFrame.TPQCov_to_DataFrame(self.t_vec, self.p_vec, self.q_vec, self.Sigma_p_vec,
-                                                         self.Sigma_R_vec)
+            return PosOrientWithCov2DataFrame.to_DataFrame(self.t_vec, self.p_vec, self.q_vec, self.Sigma_p_vec,
+                                                           self.Sigma_R_vec)
         elif self.format.type == CSVSpatialFormatType.PoseWithCov:
-            return PoseWithCov2DataFrame.TPQCov_to_DataFrame(self.t_vec, self.p_vec, self.q_vec, self.Sigma_T_vec)
+            return PoseWithCov2DataFrame.to_DataFrame(self.t_vec, self.p_vec, self.q_vec, self.Sigma_T_vec)
         elif self.format.type == CSVSpatialFormatType.TUM:
-            return TUMCSV2DataFrame.TPQ_to_DataFrame(self.t_vec, self.p_vec, self.q_vec)
+            return TUMCSV2DataFrame.to_DataFrame(self.t_vec, self.p_vec, self.q_vec)
         else:
             print('Error: format [' + str(self.format.type) + '] not supported yet')
             assert (False)
@@ -155,7 +155,7 @@ class TrajectoryEstimated(Trajectory):
 
 
         # sigma3_diag_vec = np.zeros(np.shape(self.p_vec))
-        # if self.format.rotation_error_representation == ErrorRepresentationType.R_small_theta:
+        # if self.format.rotation_error_representation == ErrorRepresentationType.theta_R:
         #     for i in range(self.num_elems()):
         #         sigma3_diag_vec = sigma_p_diag_vec[i]
         # if not cfg.radians:
@@ -211,15 +211,15 @@ class TrajectoryEstimated(Trajectory):
             unit='deg'
 
         # Converts small angle approximations of covariance to rpy angles: R =  Rz(y)Ry(p)Rx(r)
-        if self.format.rotation_error_representation == ErrorRepresentationType.R_small_theta:
+        if self.format.rotation_error_representation == ErrorRepresentationType.theta_R:
             for i in range(self.num_elems()):
                 R = SpatialConverter.theta_R2rot(sigma_theta_diag_vec[i])
                 sigma_rpy_diag_vec[i] = SpatialConverter.rot2rpy(R, unit=unit)
-        elif self.format.rotation_error_representation == ErrorRepresentationType.q_small_theta:
+        elif self.format.rotation_error_representation == ErrorRepresentationType.theta_q:
             for i in range(self.num_elems()):
                 R = SpatialConverter.theta_q2rot(sigma_theta_diag_vec[i])
                 sigma_rpy_diag_vec[i] = SpatialConverter.rot2rpy(R, unit=unit)
-        elif self.format.rotation_error_representation == ErrorRepresentationType.so3_theta:
+        elif self.format.rotation_error_representation == ErrorRepresentationType.theta_so3:
             for i in range(self.num_elems()):
                 R = SpatialConverter.theta_so3_2rot(sigma_theta_diag_vec[i])
                 sigma_rpy_diag_vec[i] = SpatialConverter.rot2rpy(R, unit=unit)

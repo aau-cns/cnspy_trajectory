@@ -89,19 +89,19 @@ class TrajectoryError(Trajectory):
     #def load_from_DataFrame(self, df):
     #    print('currently not supported! We need a CSV Format with EstErrorType first')
     #    assert False
-        #self.t_vec, self.p_vec, self.q_vec = TUMCSV2DataFrame.DataFrame_to_TPQ(data_frame=df)
+        #self.t_vec, self.p_vec, self.q_vec = TUMCSV2DataFrame.from_DataFrame(data_frame=df)
 
     #def to_DataFrame(self):
     #    print('currently not supported! We need a CSV Format with EstErrorType first')
     #    assert False
-        #return TUMCSV2DataFrame.TPQ_to_DataFrame(self.t_vec, self.p_vec, self.q_vec)
+        #return TUMCSV2DataFrame.to_DataFrame(self.t_vec, self.p_vec, self.q_vec)
 
     def load_from_CSV(self, filename):
         if not os.path.isfile(filename):
             print("Trajectory: could not find file %s" % os.path.abspath(filename))
             return False
 
-        loader = CSV2DataFrame(filename=filename)
+        loader = CSV2DataFrame(fn=filename)
         self.load_from_DataFrame(loader.data_frame)
         return loader.data_loaded
 

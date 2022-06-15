@@ -79,20 +79,20 @@ class Trajectory:
             print("Trajectory: could not find file %s" % os.path.abspath(filename))
             return False
 
-        loader = CSV2DataFrame(filename=filename)
+        loader = CSV2DataFrame(fn=filename)
         self.load_from_DataFrame(loader.data_frame)
         return loader.data_loaded
 
     def load_from_DataFrame(self, df):
-        self.t_vec, self.p_vec, self.q_vec = TUMCSV2DataFrame.DataFrame_to_TPQ(data_frame=df)
+        self.t_vec, self.p_vec, self.q_vec = TUMCSV2DataFrame.from_DataFrame(data_frame=df)
 
     def to_DataFrame(self):
-        return TUMCSV2DataFrame.TPQ_to_DataFrame(self.t_vec, self.p_vec, self.q_vec)
+        return TUMCSV2DataFrame.to_DataFrame(self.t_vec, self.p_vec, self.q_vec)
 
     def save_to_CSV(self, filename):
         if self.is_empty():
             return False
-        df = TUMCSV2DataFrame.TPQ_to_DataFrame(self.t_vec, self.p_vec, self.q_vec)
+        df = TUMCSV2DataFrame.to_DataFrame(self.t_vec, self.p_vec, self.q_vec)
         TUMCSV2DataFrame.save_CSV(df, filename=filename, fmt=CSVSpatialFormatType.TUM)
         return True
 
