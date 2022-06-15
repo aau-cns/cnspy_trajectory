@@ -33,7 +33,7 @@ class Trajectory_Test(unittest.TestCase):
     def load_trajectory_from_CSV(self):
         print('loading...')
         traj = Trajectory()
-        traj.load_from_CSV(filename=str(SAMPLE_DATA_DIR + '/ID1-pose-est.csv'))
+        traj.load_from_CSV(fn=str(SAMPLE_DATA_DIR + '/ID1-pose-est.csv'))
         return traj
 
     def test_load_trajectory_from_CSV(self):

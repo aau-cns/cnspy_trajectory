@@ -35,26 +35,26 @@ SAMPLE_DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'samp
 class TrajectoryPlotter_Test(unittest.TestCase):
     def load_trajectory_gt_from_CSV(self):
         traj = Trajectory()
-        traj.load_from_CSV(filename=str(SAMPLE_DATA_DIR + '/ID1-pose-gt.csv')) 
+        traj.load_from_CSV(fn=str(SAMPLE_DATA_DIR + '/ID1-pose-gt.csv'))
         self.assertFalse(traj.is_empty())
         return traj
 
     def load_trajectory_posorient_from_CSV(self):
         traj = TrajectoryEstimated()
-        traj.load_from_CSV(filename=str(SAMPLE_DATA_DIR + '/ID1-pose-est-posorient-cov.csv'))
+        traj.load_from_CSV(fn=str(SAMPLE_DATA_DIR + '/ID1-pose-est-posorient-cov.csv'))
         self.assertFalse(traj.is_empty())
         return traj
 
     def load_gt_est_err(self):
         traj_gt = Trajectory()
-        traj_gt.load_from_CSV(filename=str(SAMPLE_DATA_DIR + '/ID1-pose-gt.csv'))
+        traj_gt.load_from_CSV(fn=str(SAMPLE_DATA_DIR + '/ID1-pose-gt.csv'))
         traj_est = TrajectoryEstimated()
-        traj_est.load_from_CSV(filename=str(SAMPLE_DATA_DIR + '/ID1-pose-est-posorient-cov.csv'))
+        traj_est.load_from_CSV(fn=str(SAMPLE_DATA_DIR + '/ID1-pose-est-posorient-cov.csv'))
         traj_est.format = CSVSpatialFormat(fmt_type=CSVSpatialFormatType.PosOrientWithCov,
                                            est_err_type=EstimationErrorType.type5,
                                            err_rep_type=ErrorRepresentationType.theta_R)
         traj_err = TrajectoryError()
-        traj_err.load_from_CSV(filename=str(SAMPLE_DATA_DIR + '/ID1-pose-err.csv'))
+        traj_err.load_from_CSV(fn=str(SAMPLE_DATA_DIR + '/ID1-pose-err.csv'))
         traj_err.traj_err_type = TrajectoryErrorType(err_type=EstimationErrorType.type5)
 
         return traj_gt, traj_est, traj_err

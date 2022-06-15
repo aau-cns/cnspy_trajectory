@@ -47,14 +47,14 @@ class TrajectoryError_Test(unittest.TestCase):
     def load_(self):
         print('loading...')
         fn = str(SAMPLE_DATA_DIR + '/ID1-pose-err.csv')
-        obj = TrajectoryError()
-        obj.load_from_CSV(filename=fn)
+        obj = TrajectoryError(fn=fn)
         obj.traj_err_type = TrajectoryErrorType(err_type=EstimationErrorType.type1)
         return obj
 
 
     def test_plot(self):
         traj_err = self.load_()
+        traj_err.save_to_CSV(str(SAMPLE_DATA_DIR + '/results/ID1-pose-err.COPY.csv'))
         cfg = TrajectoryPlotConfig(show=True, close_figure=False,
                                    save_fn=str(SAMPLE_DATA_DIR + '/../../doc/traj_err_pos.png'))
         traj_err.plot_p_err(cfg=cfg)
