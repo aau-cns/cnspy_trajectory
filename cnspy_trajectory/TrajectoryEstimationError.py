@@ -17,32 +17,78 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 ########################################################################################################################
+import os
+from sys import version_info
+
+import numpy as np
+import pandas
+
+from cnspy_csv2dataframe.CSV2DataFrame import CSV2DataFrame
+from cnspy_csv2dataframe.PoseErrorStamped2DataFrame import PoseErrorStamped2DataFrame
+from cnspy_csv2dataframe.TUMCSV2DataFrame import TUMCSV2DataFrame
+from cnspy_spatial_csv_formats.CSVSpatialFormatType import CSVSpatialFormatType
 from cnspy_spatial_csv_formats.ErrorRepresentationType import ErrorRepresentationType
 from cnspy_spatial_csv_formats.EstimationErrorType import EstimationErrorType
-from cnspy_trajectory.Trajectory import Trajectory
+from cnspy_trajectory.TrajectoryBase import TrajectoryBase
 
 
 # - TODO: save and load to CSV file and DataFrame: introduce new format!
-class TrajectoryEstimationError(Trajectory):
+class TrajectoryEstimationError(TrajectoryBase):
     # p_vec: position error vector defined via "error_type" [m]
     # q_vec: rotation error defined via "error_type"  [quaternion]
+    nu_vec = None     # position error converted into space and unit of the rotation covariance matrix
+    theta_vec = None  # rotation error converted into space and unit of the rotation covariance matrix
+    est_err_type = EstimationErrorType.none # EstimationErrorType
+    err_rep_type = ErrorRepresentationType.none # ErrorRepresentationType
 
-    est_err_type = None # EstimationErrorType
-    err_rep_type = None # ErrorRepresentationType
-    theta_q_vec = None  # rotation error converted into space and unit of the rotation covariance matrix
+    def __init__(self, t_vec=None, nu_vec=None, theta_vec=None,
+                 est_err_type=EstimationErrorType.none, err_rep_type=ErrorRepresentationType.none,
+                 df=None, fn=None):
+        TrajectoryBase.__init__(self)
+        if df is not None:
+            self.load_from_DataFrame(df)
+        elif fn is not None:
+            self.load_from_CSV(fn)
+        elif t_vec is not None and nu_vec is not None and theta_vec is not None:
+            if t_vec.ndim == 1:
+                t_vec = np.array([t_vec])
 
-    def __init__(self, t_vec=None, p_vec=None, q_vec=None, theta_q_vec=None,
-                 est_err_type=EstimationErrorType.type1,
-                 err_rep_type=ErrorRepresentationType.theta_R):
-        Trajectory.__init__(self, t_vec=t_vec, p_vec=p_vec, q_vec=q_vec)
+            t_rows, t_cols = t_vec.shape
+            nu_rows, nu_cols = nu_vec.shape
+            theta_rows, theta_cols = theta_vec.shape
+            assert (t_rows == nu_rows)
+            assert (t_rows == theta_rows)
+            assert (theta_cols == 3)
+            assert (nu_cols == 3)
 
-        p_rows, p_cols = p_vec.shape
-        theta_rows, theta_cols = theta_q_vec.shape
-        assert (theta_rows == p_rows)
-        assert (theta_cols == 3)
+            self.nu_vec = nu_vec
+            self.theta_vec = theta_vec
+            self.t_vec = t_vec
+            self.est_err_type = est_err_type
+            self.err_rep_type = err_rep_type
+        pass
+
+
+    def load_from_DataFrame(self, df, fmt_type=None):
+        assert (isinstance(df, pandas.DataFrame))
+        if fmt_type is None:
+            fmt_type = CSV2DataFrame.identify_format(dataframe=df)
+        else:
+            assert (isinstance(fmt_type, CSVSpatialFormatType))
+
+        est_err_type = EstimationErrorType.none
+        err_rep_type = ErrorRepresentationType.none
+        if fmt_type == CSVSpatialFormatType.PoseErrorStamped:
+            self.t_vec, self.nu_vec, self.theta_vec, est_err_type_vec, err_rep_vec = \
+                PoseErrorStamped2DataFrame.from_DataFrame(df)
+            est_err_type = EstimationErrorType(est_err_type_vec[0])
+            err_rep_type = ErrorRepresentationType(err_rep_vec[0])
 
         self.est_err_type = est_err_type
         self.err_rep_type = err_rep_type
-        self.theta_q_vec = theta_q_vec
 
-
+    def to_DataFrame(self):
+        est_err_type_vec = np.tile(self.est_err_type.str(), (self.num_elems(), 1))
+        err_rep_vec = np.tile(self.err_rep_type.str(), (self.num_elems(), 1))
+        return PoseErrorStamped2DataFrame.to_DataFrame(self.t_vec, self.nu_vec, self.theta_vec,
+                                                       est_err_type_vec=est_err_type_vec, err_rep_vec=err_rep_vec)
