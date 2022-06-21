@@ -35,7 +35,7 @@ from cnspy_trajectory.Trajectory import Trajectory
 from cnspy_trajectory.TrajectoryErrorType import TrajectoryErrorType
 from cnspy_trajectory.TrajectoryPlotUtils import TrajectoryPlotUtils, TrajectoryPlotConfig
 
-# TODO: saving looks strange! [1.0],['type1']
+
 class TrajectoryError(Trajectory):
     # p_vec: position error vector defined via "error_type" [m]
     # q_vec: rotation error defined via "error_type"  [quaternion]
@@ -116,8 +116,8 @@ class TrajectoryError(Trajectory):
         self.format_type = fmt_type
 
     def to_DataFrame(self):
-        est_err_type_vec = np.tile(str(self.traj_err_type.err_type), (self.num_elems(), 1))
-        scale_vec = np.tile(self.scale, (self.num_elems(), 1))
+        est_err_type_vec = np.repeat(str(self.traj_err_type.err_type), self.num_elems(), axis=0)
+        scale_vec = np.repeat(self.scale, self.num_elems(), axis=0)
         return PoseTypedStamped2DataFrame.to_DataFrame(self.t_vec, self.p_vec, self.q_vec, scale_vec, est_err_type_vec)
 
     ########### PLOTTING #################
