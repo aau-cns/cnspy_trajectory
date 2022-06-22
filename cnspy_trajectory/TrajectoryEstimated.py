@@ -108,12 +108,12 @@ class TrajectoryEstimated(Trajectory):
             self.t_vec, self.p_vec, self.q_vec, self.Sigma_p_vec, self.Sigma_R_vec, \
             est_err_type_vec, err_rep_vec = PosOrientWithCovTyped2DataFrame.from_DataFrame(data_frame=df)
             est_err_type = EstimationErrorType(est_err_type_vec[0])
-            err_rep_type = ErrorRepresentationType(est_err_type_vec[0])
+            err_rep_type = ErrorRepresentationType(err_rep_vec[0])
         elif fmt_type == CSVSpatialFormatType.PoseWithCovTyped:
             self.t_vec, self.p_vec, self.q_vec, self.Sigma_T_vec, \
             est_err_type_vec, err_rep_vec = PoseWithCovTyped2DataFrame.from_DataFrame(data_frame=df)
             est_err_type = EstimationErrorType(est_err_type_vec[0])
-            err_rep_type = ErrorRepresentationType(est_err_type_vec[0])
+            err_rep_type = ErrorRepresentationType(err_rep_vec[0])
         else:
             print('Error: format not supported yet')
             return False
@@ -130,16 +130,17 @@ class TrajectoryEstimated(Trajectory):
         elif self.format.type == CSVSpatialFormatType.TUM:
             return TUMCSV2DataFrame.to_DataFrame(self.t_vec, self.p_vec, self.q_vec)
         elif self.format.type == CSVSpatialFormatType.PosOrientWithCovTyped:
-            est_err_type_vec = np.tile(self.format.estimation_error_type.str(), (self.num_elems(), 1))
-            err_rep_vec = np.tile(self.format.rotation_error_representation.str(), (self.num_elems(), 1))
+            est_err_type_vec = np.repeat(self.format.estimation_error_type.str(), self.num_elems(), axis=0)
+            err_rep_vec = np.repeat(self.format.rotation_error_representation.str(), self.num_elems(), axis=0)
 
             return PosOrientWithCovTyped2DataFrame.to_DataFrame(self.t_vec, self.p_vec, self.q_vec, self.Sigma_p_vec,
                                                                 self.Sigma_R_vec,
                                                                 est_err_type_vec=est_err_type_vec,
                                                                 err_rep_vec=err_rep_vec)
         elif self.format.type == CSVSpatialFormatType.PoseWithCovTyped:
-            est_err_type_vec = np.tile(self.format.estimation_error_type.str(), (self.num_elems(), 1))
-            err_rep_vec = np.tile(self.format.rotation_error_representation.str(), (self.num_elems(), 1))
+            est_err_type_vec = np.repeat(self.format.estimation_error_type.str(), self.num_elems(), axis=0)
+            err_rep_vec = np.repeat(self.format.rotation_error_representation.str(), self.num_elems(), axis=0)
+
             return PoseWithCovTyped2DataFrame.to_DataFrame(self.t_vec, self.p_vec, self.q_vec, self.Sigma_T_vec,
                                                            est_err_type_vec=est_err_type_vec,
                                                            err_rep_vec=err_rep_vec)
@@ -154,12 +155,12 @@ class TrajectoryEstimated(Trajectory):
         assert (isinstance(cfg, TrajectoryPlotConfig))
 
         sigma_p_diag_vec = np.zeros(np.shape(self.p_vec))
-        if self.format.type == CSVSpatialFormatType.PosOrientWithCov:
+        if self.format.type == CSVSpatialFormatType.PosOrientWithCov or self.format.type == CSVSpatialFormatType.PosOrientWithCovTyped:
             for i in range(self.num_elems()):
                 P = self.Sigma_p_vec[i]
                 sigma_p_diag_vec[i] = np.sqrt(np.diag(P))
 
-        elif self.format.type == CSVSpatialFormatType.PoseWithCov:
+        elif self.format.type == CSVSpatialFormatType.PoseWithCov or self.format.type == CSVSpatialFormatType.PoseWithCovTyped :
             for i in range(self.num_elems()):
                 P = self.Sigma_T_vec[i]
                 sigma_p_diag_vec[i] = np.sqrt(np.diag(P[[0,1,2], [0,1,2]]))
@@ -208,10 +209,10 @@ class TrajectoryEstimated(Trajectory):
         assert (isinstance(cfg, TrajectoryPlotConfig))
 
         sigma_theta_diag_vec = np.zeros(np.shape(self.p_vec))
-        if self.format.type == CSVSpatialFormatType.PosOrientWithCov:
+        if self.format.type == CSVSpatialFormatType.PosOrientWithCov or self.format.type == CSVSpatialFormatType.PosOrientWithCovTyped:
             for i in range(self.num_elems()):
                 sigma_theta_diag_vec[i] = np.sqrt(np.diag(self.Sigma_R_vec[i]))
-        elif self.format.type == CSVSpatialFormatType.PoseWithCov:
+        elif self.format.type == CSVSpatialFormatType.PoseWithCov or self.format.type == CSVSpatialFormatType.PoseWithCovTyped:
             for i in range(self.num_elems()):
                 P = self.Sigma_T_vec[i]
                 sigma_theta_diag_vec[i] = np.sqrt(np.diag(P[[0, 1, 2], [0, 1, 2]]))
