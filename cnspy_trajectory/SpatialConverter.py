@@ -63,6 +63,14 @@ class SpatialConverter:
         return UnitQuaternion(q_AB[indices])
 
     @staticmethod
+    def HTMQ_quaternion_to_rot(q_AB):
+        # numpy is inconsistent with shape! as q_AB.shape == (4, 1) fails!
+        if not (isinstance(q_AB, np.ndarray) and len(q_AB) == 4):
+            raise ValueError('Invalid input')
+        indices = [3, 0, 1, 2]
+        return UnitQuaternion(q_AB[indices]).R
+
+    @staticmethod
     def SO3_to_HTMQ_quaternion(R_AB):
         # returns a np.array representing a unit-quaternion [x,y,z, w], [[v], s];
         # Convert SO(3) rotation matrix to unit-quaternion
