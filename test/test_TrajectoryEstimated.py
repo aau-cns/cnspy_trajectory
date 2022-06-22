@@ -21,6 +21,7 @@
 ########################################################################################################################
 import os
 
+from cnspy_spatial_csv_formats.CSVSpatialFormatType import CSVSpatialFormatType
 from cnspy_spatial_csv_formats.ErrorRepresentationType import ErrorRepresentationType
 from cnspy_trajectory.Trajectory import Trajectory
 from cnspy_trajectory.TrajectoryEstimated import TrajectoryEstimated
@@ -43,9 +44,7 @@ class TrajectoryEstimated_Test(unittest.TestCase):
 
     def load_(self):
         print('loading...')
-        fn = str(SAMPLE_DATA_DIR + '/ID1-pose-est-posorient-cov.csv')
-        obj = TrajectoryEstimated()
-        obj.load_from_CSV(fn=fn)
+        obj = TrajectoryEstimated(fn = str(SAMPLE_DATA_DIR + '/ID1-pose-est-posorient-cov.csv'))
         obj.format.rotation_error_representation = ErrorRepresentationType.theta_R
         return obj
 
@@ -59,6 +58,8 @@ class TrajectoryEstimated_Test(unittest.TestCase):
         print('\n' + str(obj.Sigma_p_vec[1000]))
         self.start()
         obj.save_to_CSV(fn=str(SAMPLE_DATA_DIR + '/results/ID1-pose-est-cov-copy.csv'))
+        obj.format.type = CSVSpatialFormatType.PosOrientWithCovTyped
+        obj.save_to_CSV(fn=str(SAMPLE_DATA_DIR + '/results/ID1-pose-est-cov-typed-copy.csv'))
         self.stop()
 
     def test_load_pose_cov_traj(self):
