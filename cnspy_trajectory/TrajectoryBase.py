@@ -52,7 +52,7 @@ class TrajectoryBase(ABC):
             return False
 
         loader = CSV2DataFrame(fn=fn)
-        self.load_from_DataFrame(loader.data_frame)
+        self.load_from_DataFrame(loader.data_frame, fmt_type=loader.format)
         return loader.data_loaded
 
     def save_to_CSV(self, fn):
