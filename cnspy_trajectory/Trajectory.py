@@ -118,6 +118,8 @@ class Trajectory(TrajectoryBase):
 
         return phi_vec, axis_vec
 
+    # TODO: rename parameters and method name. Indicate that it is a local to global transformation (left multiplied)
+    #  and the members of trajectory should emphasis the relation between Body and World/Global
     def transform(self, scale=1.0, t=np.zeros((3,)), R=np.identity(3)):
         p_es_aligned = np.zeros(np.shape(self.p_vec))
         q_es_aligned = np.zeros(np.shape(self.q_vec))
@@ -377,7 +379,7 @@ class Trajectory(TrajectoryBase):
         TrajectoryPlotConfig.show_save_figure(cfg, fig)
         return fig, ax1, ax2
 
-    def plot_3D(self, fig=None, ax=None, cfg=TrajectoryPlotConfig()):
+    def plot_3D(self, fig=None, ax=None, cfg=TrajectoryPlotConfig(), label='traj'):
         assert (isinstance(cfg, TrajectoryPlotConfig))
 
         if fig is None:
@@ -394,7 +396,7 @@ class Trajectory(TrajectoryBase):
             else:
                 ax.set_title("Plot3D")
 
-        self.ax_plot_pos_3D(ax=ax, cfg=cfg)
+        self.ax_plot_pos_3D(ax=ax, cfg=cfg, label=label)
         self.ax_plot_frames_3D(ax=ax, cfg=cfg, plot_origin=True, num_markers=10)
 
         set_axes_equal(ax)

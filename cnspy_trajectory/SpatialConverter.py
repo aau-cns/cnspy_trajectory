@@ -45,6 +45,8 @@ class SpatialConverter:
     def __init__(self):
         pass
 
+
+
     @staticmethod
     def UnitQuaternion_to_HTMQ_quaternion(q_AB):
         assert (isinstance(q_AB, UnitQuaternion))
@@ -108,8 +110,10 @@ class SpatialConverter:
     @staticmethod
     def p_R_to_SE3(p_AB_in_A, R_AB):
         if not (isinstance(R_AB, np.ndarray) and R_AB.shape == (3, 3)):
+            print(str(R_AB))
             raise ValueError('Invalid input')
         if not (isinstance(p_AB_in_A, np.ndarray) and len(p_AB_in_A) == 3):
+            print(str(p_AB_in_A))
             raise ValueError('Invalid input')
 
         T = np.identity(4)
