@@ -42,6 +42,9 @@ from cnspy_trajectory.TrajectoryPlotConfig import TrajectoryPlotConfig
 from cnspy_trajectory.TrajectoryPlotUtils import TrajectoryPlotUtils
 
 # TODO: make TrajectoryEstimatedBase and derive TrajEstPose and TrajEstPosOrient
+# TODO: convert locally estimated covariance into global covariance using the
+#  adjoint: https://gtsam.org/2021/02/23/uncertainties-part3.html Σ_W = Ad_{T_{WB}} Σ_B Ad_{T_{WB}}^{T}
+# TODO: overwrite transform to rotate global covariances!
 class TrajectoryEstimated(Trajectory):
     # position uncertainty: 3x3 covariance matrix.
     # The with upper triangular elements are vectorized: 'pxx', 'pxy', 'pxz', 'pyy', 'pyz', 'pzz'
@@ -85,6 +88,46 @@ class TrajectoryEstimated(Trajectory):
 
     def get_format(self):
         return self.format
+
+    # overriding abstract method
+    def transform(self, scale=1.0, t=np.zeros((3,)), R=np.identity(3)):
+        # Calling the parent's class
+        Trajectory.transform(self=self, scale=scale, t=t, R=R)
+
+        # Covariance of pose is expressed in the global frame
+        if self.format.estimation_error_type == EstimationErrorType.type2:
+            if self.Sigma_T_vec is not None:
+                T_AB = SpatialConverter.p_R_to_SE3(t, R)
+                Adj_AB = base.tr2adjoint(T_AB)
+                for i in range(self.num_elems()):
+                    # Sigma expressed in Navigation frame
+                    Sigma_NB = self.Sigma_T_vec[i, :, :]
+                    Sigma_GB = np.dot(Adj_AB, np.dot(Sigma_NB, Adj_AB.T))
+                    self.Sigma_T_vec[i, :, :] = Sigma_GB
+        # Covariance of position is defined globally
+        elif self.format.estimation_error_type == EstimationErrorType.type5:
+            if self.Sigma_p_vec is not None:
+                for i in range(self.num_elems()):
+                    # Sigma expressed in Navigation frame
+                    Sigma_p_NB = self.Sigma_p_vec[i, :, :]
+                    Sigma_p_GB = np.dot(R, np.dot(Sigma_p_NB, R.T))
+                    self.Sigma_p_vec[i, :, :] = Sigma_p_GB
+        # Covariance of position and orientation is defined globally
+        elif self.format.estimation_error_type == EstimationErrorType.type6:
+            if self.Sigma_p_vec is not None and self.Sigma_R_vec is not None:
+                for i in range(self.num_elems()):
+                    # Sigma expressed in Navigation frame
+                    Sigma_p_NB = self.Sigma_p_vec[i, :, :]
+                    Sigma_p_GB = np.dot(R, np.dot(Sigma_p_NB, R.T))
+                    self.Sigma_p_vec[i, :, :] = Sigma_p_GB
+
+                    Sigma_R_NB = self.Sigma_R_vec[i, :, :]
+                    Sigma_R_GB = np.dot(R, np.dot(Sigma_R_NB, R.T))
+                    self.Sigma_p_vec[i, :, :] = Sigma_R_GB
+        # else:
+        #    local covariances are invariant to global reference changes!
+
+    ########################################################
 
     def load_from_DataFrame(self, df, fmt_type=None):
         assert (isinstance(df, pandas.DataFrame))
