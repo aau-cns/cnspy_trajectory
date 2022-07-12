@@ -78,6 +78,9 @@ class Trajectory(TrajectoryBase):
             self.p_vec = p_vec
             self.q_vec = q_vec
 
+    def clone(self):
+        return Trajectory(t_vec=self.t_vec.copy(), p_vec=self.p_vec.copy(), q_vec=self.q_vec.copy())
+
     # overriding abstract method
     def load_from_DataFrame(self, df, fmt_type=None):
         self.t_vec, self.p_vec, self.q_vec = TUMCSV2DataFrame.from_DataFrame(data_frame=df)
@@ -121,21 +124,21 @@ class Trajectory(TrajectoryBase):
     # TODO: rename parameters and method name. Indicate that it is a local to global transformation (left multiplied)
     #  and the members of trajectory should emphasis the relation between Body and World/Global
     def transform(self, scale=1.0, t=np.zeros((3,)), R=np.identity(3)):
-        p_es_aligned = np.zeros(np.shape(self.p_vec))
-        q_es_aligned = np.zeros(np.shape(self.q_vec))
+        p_GB_in_G_arr = np.zeros(np.shape(self.p_vec))
+        q_GB_arr = np.zeros(np.shape(self.q_vec))
 
-        T_AB = SpatialConverter.p_R_to_SE3(t, R)
+        T_GN = SpatialConverter.p_R_to_SE3(t, R)
         for i in range(np.shape(self.p_vec)[0]):
-            T_BC = SpatialConverter.p_q_HTMQ_to_SE3(scale * self.p_vec[i, :], self.q_vec[i, :])
+            T_NB = SpatialConverter.p_q_HTMQ_to_SE3(scale * self.p_vec[i, :], self.q_vec[i, :])
             # T_AC = T_AB * T_BC
-            p_AC, q_AC = SpatialConverter.SE3_to_p_q_HTMQ(T_AB * T_BC)
-            q_es_aligned[i, :] = q_AC
-            p_es_aligned[i, :] = p_AC
+            p_GB_in_G, q_GB = SpatialConverter.SE3_to_p_q_HTMQ(T_GN * T_NB)
+            q_GB_arr[i, :] = q_GB
+            p_GB_in_G_arr[i, :] = p_GB_in_G
 
         # self.p_vec = R * (scale * self.p_vec) + t
 
-        self.p_vec = p_es_aligned
-        self.q_vec = q_es_aligned
+        self.p_vec = p_GB_in_G_arr
+        self.q_vec = q_GB_arr
 
     @staticmethod
     def distances_from_start(p_vec):
@@ -379,7 +382,7 @@ class Trajectory(TrajectoryBase):
         TrajectoryPlotConfig.show_save_figure(cfg, fig)
         return fig, ax1, ax2
 
-    def plot_3D(self, fig=None, ax=None, cfg=TrajectoryPlotConfig(), label='traj'):
+    def plot_3D(self, fig=None, ax=None, cfg=TrajectoryPlotConfig(), label='traj', num_markers=10):
         assert (isinstance(cfg, TrajectoryPlotConfig))
 
         if fig is None:
@@ -397,7 +400,7 @@ class Trajectory(TrajectoryBase):
                 ax.set_title("Plot3D")
 
         self.ax_plot_pos_3D(ax=ax, cfg=cfg, label=label)
-        self.ax_plot_frames_3D(ax=ax, cfg=cfg, plot_origin=True, num_markers=10)
+        self.ax_plot_frames_3D(ax=ax, cfg=cfg, plot_origin=True, num_markers=num_markers)
 
         set_axes_equal(ax)
         ax.legend(shadow=True, fontsize='x-small')
