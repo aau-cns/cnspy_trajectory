@@ -68,6 +68,13 @@ class TrajectoryEstimationError(TrajectoryBase):
             self.err_rep_type = err_rep_type
         pass
 
+    def subsample(self, step=None, num_max_points=None, verbose=False):
+        sparse_indices = TrajectoryBase.subsample(self, step=step, num_max_points=num_max_points, verbose=verbose)
+        self.nu_vec = self.nu_vec[sparse_indices]
+        self.theta_vec = self.theta_vec[sparse_indices]
+
+        return sparse_indices
+
 
     def load_from_DataFrame(self, df, fmt_type=None):
         assert (isinstance(df, pandas.DataFrame))
