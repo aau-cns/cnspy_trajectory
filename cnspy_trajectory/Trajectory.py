@@ -303,6 +303,25 @@ class Trajectory(TrajectoryBase):
                                         relative_time=cfg.relative_time,
                                         colors=colors, labels=labels, ls=ls)
 
+    def ax_plot_pos_distance(self, ax, cfg,
+                    x_label_prefix='',
+                    y_label_prefix='',
+                    colors=['r'],
+                    labels=['norm2([x,y,z])'],
+                    ls=PlotLineStyle()):
+
+        assert (isinstance(cfg, TrajectoryPlotConfig))
+
+        ts, xs, ys, zs, dist_vec = self.get_pos_data(cfg)
+        ds = np.linalg.norm([xs, ys, zs], axis=0)
+        x_arr = TrajectoryPlotUtils.ax_x_linespace(ax=ax, ts=ts, dist_vec=dist_vec,
+                                                   relative_time=cfg.relative_time, plot_type=cfg.plot_type,
+                                                   x_label_prefix=x_label_prefix)
+        ax.set_ylabel(y_label_prefix + 'eucl. distance [m]')
+        TrajectoryPlotUtils.ax_plot_n_dim(ax, x_arr, ds, colors=[colors[0]], labels=[labels[0]], ls=ls)
+
+
+
     def ax_plot_rpy(self, ax, cfg,
                     x_label_prefix='',
                     y_label_prefix='Rz(y)Ry(p)Rx(r)',
@@ -383,14 +402,17 @@ class Trajectory(TrajectoryBase):
             ax.plot3D(xs, ys, zs, label=str(label))
         pass
 
-    def plot_pose(self, cfg=TrajectoryPlotConfig(), fig=None, angles=False, plot_angle=False):
+    def plot_pose(self, cfg=TrajectoryPlotConfig(), fig=None, angles=False, plot_angle=False, plot_distance=False):
         assert (isinstance(cfg, TrajectoryPlotConfig))
 
         if fig is None:
             fig = plt.figure(figsize=(20, 15), dpi=int(cfg.dpi))
 
         ax1 = fig.add_subplot(211)
-        self.ax_plot_pos(ax=ax1, cfg=cfg)
+        if plot_distance:
+            self.ax_plot_pos_distance(ax=ax1, cfg=cfg)
+        else:
+            self.ax_plot_pos(ax=ax1, cfg=cfg)
         ax2 = fig.add_subplot(212)
 
         if plot_angle:
