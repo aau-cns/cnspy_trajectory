@@ -17,6 +17,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 ########################################################################################################################
+import math
 import os
 from sys import version_info
 from abc import ABC, abstractmethod
@@ -45,6 +46,27 @@ class TrajectoryBase(ABC):
     @abstractmethod
     def load_from_DataFrame(self, df, fmt_type=None):
         pass
+
+    @abstractmethod
+    def subsample(self, step=None, num_max_points=None, verbose=False):
+        num_elems = self.num_elems()
+
+        if num_max_points:
+            step = 1
+            if (int(num_max_points) > 0) and (int(num_max_points) < num_elems):
+                step = int(math.ceil(num_elems / float(num_max_points)))
+
+        sparse_indices = np.arange(start=0, stop=num_elems, step=step)
+        if (num_max_points or step):
+            if verbose:
+                print("TrajectoryBase.subsample():")
+                print("* len: " + str(num_elems) + ", max_num_points: " + str(
+                    num_max_points) + ", subsample by: " + str(step))
+
+            self.t_vec = self.t_vec[sparse_indices]
+
+        return sparse_indices
+
 
     def load_from_CSV(self, fn):
         if not os.path.isfile(fn):

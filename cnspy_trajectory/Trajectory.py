@@ -78,6 +78,12 @@ class Trajectory(TrajectoryBase):
             self.p_vec = p_vec
             self.q_vec = q_vec
 
+    def subsample(self, step=None, num_max_points=None, verbose=False):
+        sparse_indices = TrajectoryBase.subsample(self, step=step, num_max_points=num_max_points, verbose=verbose)
+        self.p_vec = self.p_vec[sparse_indices]
+        self.q_vec = self.q_vec[sparse_indices]
+        return sparse_indices
+
     def clone(self):
         return Trajectory(t_vec=self.t_vec.copy(), p_vec=self.p_vec.copy(), q_vec=self.q_vec.copy())
 
@@ -98,6 +104,22 @@ class Trajectory(TrajectoryBase):
                 return self.dist
         else:
             return 0
+
+    def get_rot_arr(self):
+        rot_arr = np.zeros(shape=[self.num_elems(), 3, 3])
+        for i in range(self.num_elems()):
+            rot_arr[i, :, :] = SpatialConverter.HTMQ_quaternion_to_rot(self.q_vec[i,:])
+
+        return rot_arr
+
+    def set_rot_arr(self, rot_arr):
+        assert rot_arr.shape[0] == self.num_elems()
+        assert rot_arr.shape[1] == 3
+        assert rot_arr.shape[2] == 3
+
+        for i in range(self.num_elems()):
+            self.q_vec[i,:] = SpatialConverter.SO3_to_HTMQ_quaternion(rot_arr[i, :, :])
+
 
     def get_accumulated_distances(self):
         return Trajectory.distances_from_start(self.p_vec)
@@ -123,19 +145,19 @@ class Trajectory(TrajectoryBase):
 
     # TODO: rename parameters and method name. Indicate that it is a local to global transformation (left multiplied)
     #  and the members of trajectory should emphasis the relation between Body and World/Global
-    def transform(self, scale=1.0, t=np.zeros((3,)), R=np.identity(3)):
+    def transform(self, scale=1.0, p_GN_in_G=np.zeros((3,)), R_GN=np.identity(3)):
         p_GB_in_G_arr = np.zeros(np.shape(self.p_vec))
         q_GB_arr = np.zeros(np.shape(self.q_vec))
 
-        T_GN = SpatialConverter.p_R_to_SE3(t, R)
+        T_GN = SpatialConverter.p_R_to_SE3(p_GN_in_G, R_GN)
         for i in range(np.shape(self.p_vec)[0]):
             T_NB = SpatialConverter.p_q_HTMQ_to_SE3(scale * self.p_vec[i, :], self.q_vec[i, :])
             # T_AC = T_AB * T_BC
+            # p_AC_in_A = p_AB_in_A + R_AB * p_BC_in_B
+            # R_AC = R_AB * R_BC
             p_GB_in_G, q_GB = SpatialConverter.SE3_to_p_q_HTMQ(T_GN * T_NB)
             q_GB_arr[i, :] = q_GB
             p_GB_in_G_arr[i, :] = p_GB_in_G
-
-        # self.p_vec = R * (scale * self.p_vec) + t
 
         self.p_vec = p_GB_in_G_arr
         self.q_vec = q_GB_arr

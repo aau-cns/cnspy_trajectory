@@ -90,14 +90,14 @@ class TrajectoryEstimated(Trajectory):
         return self.format
 
     # overriding abstract method
-    def transform(self, scale=1.0, t=np.zeros((3,)), R=np.identity(3)):
+    def transform(self, scale=1.0, p_GN_in_G=np.zeros((3,)), R_GN=np.identity(3)):
         # Calling the parent's class
-        Trajectory.transform(self=self, scale=scale, t=t, R=R)
+        Trajectory.transform(self=self, scale=scale, p_GN_in_G=p_GN_in_G, R_GN=R_GN)
 
         # Covariance of pose is expressed in the global frame
         if self.format.estimation_error_type == EstimationErrorType.type2:
             if self.Sigma_T_vec is not None:
-                T_AB = SpatialConverter.p_R_to_SE3(t, R)
+                T_AB = SpatialConverter.p_R_to_SE3(p_GN_in_G, R_GN)
                 Adj_AB = base.tr2adjoint(T_AB)
                 for i in range(self.num_elems()):
                     # Sigma expressed in Navigation frame
@@ -110,7 +110,7 @@ class TrajectoryEstimated(Trajectory):
                 for i in range(self.num_elems()):
                     # Sigma expressed in Navigation frame
                     Sigma_p_NB = self.Sigma_p_vec[i, :, :]
-                    Sigma_p_GB = np.dot(R, np.dot(Sigma_p_NB, R.T))
+                    Sigma_p_GB = np.dot(R_GN, np.dot(Sigma_p_NB, R_GN.T))
                     self.Sigma_p_vec[i, :, :] = Sigma_p_GB
         # Covariance of position and orientation is defined globally
         elif self.format.estimation_error_type == EstimationErrorType.type6:
@@ -118,16 +118,31 @@ class TrajectoryEstimated(Trajectory):
                 for i in range(self.num_elems()):
                     # Sigma expressed in Navigation frame
                     Sigma_p_NB = self.Sigma_p_vec[i, :, :]
-                    Sigma_p_GB = np.dot(R, np.dot(Sigma_p_NB, R.T))
+                    Sigma_p_GB = np.dot(R_GN, np.dot(Sigma_p_NB, R_GN.T))
                     self.Sigma_p_vec[i, :, :] = Sigma_p_GB
 
                     Sigma_R_NB = self.Sigma_R_vec[i, :, :]
-                    Sigma_R_GB = np.dot(R, np.dot(Sigma_R_NB, R.T))
+                    Sigma_R_GB = np.dot(R_GN, np.dot(Sigma_R_NB, R_GN.T))
                     self.Sigma_p_vec[i, :, :] = Sigma_R_GB
         # else:
         #    local covariances are invariant to global reference changes!
 
     ########################################################
+
+    def subsample(self, step=None, num_max_points=None, verbose=False):
+        sparse_indices = Trajectory.subsample(self, step=step, num_max_points=num_max_points, verbose=verbose)
+
+        if self.Sigma_p_vec is not None:
+            self.Sigma_p_vec = self.Sigma_p_vec[sparse_indices, :, :]
+        if self.Sigma_R_vec is not None:
+            self.Sigma_R_vec = self.Sigma_R_vec[sparse_indices, :, :]
+        if self.Sigma_pR_vec is not None:
+            self.Sigma_pR_vec = self.Sigma_pR_vec[sparse_indices, :, :]
+        if self.Sigma_T_vec is not None:
+            self.Sigma_T_vec = self.Sigma_T_vec[sparse_indices, :, :]
+
+        return sparse_indices
+
 
     def load_from_DataFrame(self, df, fmt_type=None):
         assert (isinstance(df, pandas.DataFrame))
