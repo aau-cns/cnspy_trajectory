@@ -44,8 +44,10 @@ class SpatialConverter:
 
     def __init__(self):
         pass
-
-
+    @staticmethod
+    def HTMQ_quaternion_identity():
+        # [x, y, z, w]
+        return np.array([0, 0, 0, 1])
 
     @staticmethod
     def UnitQuaternion_to_HTMQ_quaternion(q_AB):
