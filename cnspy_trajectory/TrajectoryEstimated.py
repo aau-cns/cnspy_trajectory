@@ -398,8 +398,8 @@ class TrajectoryEstimated(Trajectory):
             else:
                 self.ax_plot_q(ax=ax2, cfg=cfg)
 
-        self.ax_plot_p_sigma(ax3, cfg=cfg)
-        self.ax_plot_rpy_sigma(ax4, cfg=cfg)
+        self.ax_plot_p_sigma(ax3, cfg=cfg, colors=['darkred', 'darkgreen', 'darkblue'])
+        self.ax_plot_rpy_sigma(ax4, cfg=cfg, colors=['darkred', 'darkgreen', 'darkblue'])
 
         TrajectoryPlotConfig.show_save_figure(cfg, fig)
         return fig, ax1, ax2, ax3, ax4

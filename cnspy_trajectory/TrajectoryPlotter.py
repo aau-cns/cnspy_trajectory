@@ -65,8 +65,8 @@ class TrajectoryPlotter:
                                                                 cfg=cfg_, fig=fig,
                                                                 angles=True, plot_rpy=True,
                                                                 traj_gt=traj_gt)
-        traj_est.ax_plot_p_sigma(ax2, cfg=cfg_, colors=['k', 'k', 'k'], ls=PlotLineStyle(linestyle='-.', linewidth=0.5))
-        traj_est.ax_plot_rpy_sigma(ax4, cfg=cfg_, colors=['k', 'k', 'k'], ls=PlotLineStyle(linestyle='-.', linewidth=0.5))
+        traj_est.ax_plot_p_sigma(ax2, cfg=cfg_, colors=['darkred', 'darkgreen', 'darkblue'], ls=PlotLineStyle(linestyle='-.', linewidth=0.5))
+        traj_est.ax_plot_rpy_sigma(ax4, cfg=cfg_, colors=['darkred', 'darkgreen', 'darkblue'], ls=PlotLineStyle(linestyle='-.', linewidth=0.5))
 
         TrajectoryPlotConfig.show_save_figure(cfg, fig)
         return fig, ax1, ax2, ax3, ax4

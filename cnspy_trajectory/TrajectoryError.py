@@ -179,7 +179,7 @@ class TrajectoryError(Trajectory):
         if traj_gt:
             assert (isinstance(traj_gt, Trajectory))
             traj_gt.ax_plot_pos(ax=ax1, cfg=cfg, y_label_prefix='true ',
-                                colors=['k', 'k', 'k'], labels=['gt_x', 'gt_y', 'gt_z'],
+                                colors=['darkred', 'darkgreen', 'darkblue'], labels=['gt_x', 'gt_y', 'gt_z'],
                                 ls=PlotLineStyle(linestyle='-.', linewidth=0.5))
         traj_err.ax_plot_pos(ax=ax2, cfg=cfg)
 
@@ -189,7 +189,7 @@ class TrajectoryError(Trajectory):
         if angles:
             traj_est.ax_plot_rpy(ax=ax3, cfg=cfg)
             if traj_gt:
-                traj_gt.ax_plot_rpy(ax=ax3, cfg=cfg, colors=['k', 'k', 'k'],
+                traj_gt.ax_plot_rpy(ax=ax3, cfg=cfg, colors=['darkred', 'darkgreen', 'darkblue'],
                                     ls=PlotLineStyle(linestyle='-.', linewidth=0.5))
 
             if plot_rpy:
