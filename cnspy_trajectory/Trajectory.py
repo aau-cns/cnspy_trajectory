@@ -402,23 +402,24 @@ class Trajectory(TrajectoryBase):
             ax.plot3D(xs, ys, zs, label=str(label))
         pass
 
-    def plot_pose(self, cfg=TrajectoryPlotConfig(), fig=None, angles=False, plot_angle=False, plot_distance=False):
+    def plot_pose(self, cfg=TrajectoryPlotConfig(), fig=None, quaternions=False, plot_angle_distance=False,
+                  plot_eucl_distance=False):
         assert (isinstance(cfg, TrajectoryPlotConfig))
 
         if fig is None:
             fig = plt.figure(figsize=(20, 15), dpi=int(cfg.dpi))
 
         ax1 = fig.add_subplot(211)
-        if plot_distance:
+        if plot_eucl_distance:
             self.ax_plot_pos_distance(ax=ax1, cfg=cfg)
         else:
             self.ax_plot_pos(ax=ax1, cfg=cfg)
         ax2 = fig.add_subplot(212)
 
-        if plot_angle:
+        if plot_angle_distance:
             self.ax_plot_angle(ax=ax2, cfg=cfg)
         else:
-            if angles:
+            if not quaternions:
                 self.ax_plot_rpy(ax=ax2, cfg=cfg)
             else:
                 self.ax_plot_q(ax=ax2, cfg=cfg)

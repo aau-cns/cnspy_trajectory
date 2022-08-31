@@ -124,20 +124,20 @@ class Trajectory_Test(unittest.TestCase):
         traj = self.load_trajectory_from_CSV()
         cfg=TrajectoryPlotConfig(show=False, close_figure=False, save_fn=str(SAMPLE_DATA_DIR + '/../../doc/pose.png'))
         traj.plot_pose(cfg=cfg)
-        traj.plot_pose(cfg=cfg, angles=True)
+        traj.plot_pose(cfg=cfg, quaternions=True)
         cfg.radians = False
-        traj.plot_pose(cfg=cfg, angles=True)
+        traj.plot_pose(cfg=cfg, quaternions=True)
 
-        traj.plot_pose(cfg=cfg, plot_angle=True)
-        traj.plot_pose(cfg=cfg, plot_angle=True)
+        traj.plot_pose(cfg=cfg, plot_angle_distance=True)
+        traj.plot_pose(cfg=cfg, plot_angle_distance=True)
 
-        traj.plot_pose(angles=True, cfg=TrajectoryPlotConfig(show=False,
-                                                                close_figure=False,
-                                                                radians=False,
-                                                                plot_type=TrajectoryPlotTypes.plot_2D_over_dist))
-        traj.plot_pose(angles=True, cfg=TrajectoryPlotConfig(show=True,
-                                                                close_figure=False,
-                                                                radians=False,
-                                                                plot_type=TrajectoryPlotTypes.plot_2D_over_t))
+        traj.plot_pose(quaternions=True, cfg=TrajectoryPlotConfig(show=False,
+                                                                  close_figure=False,
+                                                                  radians=False,
+                                                                  plot_type=TrajectoryPlotTypes.plot_2D_over_dist))
+        traj.plot_pose(quaternions=True, cfg=TrajectoryPlotConfig(show=True,
+                                                                  close_figure=False,
+                                                                  radians=False,
+                                                                  plot_type=TrajectoryPlotTypes.plot_2D_over_t))
 if __name__ == "__main__":
     unittest.main()
