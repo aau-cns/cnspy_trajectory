@@ -77,6 +77,9 @@ class TrajectoryPlotConfig():
         plt.draw()
         plt.pause(0.001)
         if cfg.save_fn:
+            if not os.path.exists(cfg.result_dir):
+                os.makedirs(cfg.result_dir)
+
             filename = os.path.join(cfg.result_dir, cfg.save_fn)
             print("save to file: " + filename)
             plt.savefig(filename, dpi=int(cfg.dpi))
