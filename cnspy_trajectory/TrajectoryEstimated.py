@@ -129,6 +129,7 @@ class TrajectoryEstimated(Trajectory):
 
     ########################################################
 
+    # overriding abstract method
     def subsample(self, step=None, num_max_points=None, verbose=False):
         sparse_indices = Trajectory.subsample(self, step=step, num_max_points=num_max_points, verbose=verbose)
 
@@ -143,7 +144,33 @@ class TrajectoryEstimated(Trajectory):
 
         return sparse_indices
 
+    # overriding abstract method
+    def sample(self, indices_arr, verbose=False):
+        Trajectory.sample(self, indices_arr=indices_arr)
+        if self.Sigma_p_vec is not None:
+            self.Sigma_p_vec = self.Sigma_p_vec[indices_arr, :, :]
+        if self.Sigma_R_vec is not None:
+            self.Sigma_R_vec = self.Sigma_R_vec[indices_arr, :, :]
+        if self.Sigma_pR_vec is not None:
+            self.Sigma_pR_vec = self.Sigma_pR_vec[indices_arr, :, :]
+        if self.Sigma_T_vec is not None:
+            self.Sigma_T_vec = self.Sigma_T_vec[indices_arr, :, :]
 
+    # overriding abstract method
+    def clone(self):
+        obj =  TrajectoryEstimated(t_vec=self.t_vec.copy(), p_vec=self.p_vec.copy(), q_vec=self.q_vec.copy())
+        obj.set_format(self.get_format())
+        if self.Sigma_p_vec is not None:
+            obj.Sigma_p_vec = self.Sigma_p_vec.copy()
+        if self.Sigma_R_vec is not None:
+            obj.Sigma_R_vec = self.Sigma_R_vec.copy()
+        if self.Sigma_pR_vec is not None:
+            obj.Sigma_pR_vec = self.Sigma_pR_vec.copy()
+        if self.Sigma_T_vec is not None:
+            obj.Sigma_T_vec = self.Sigma_T_vec.copy()
+        return obj
+
+    # overriding abstract method
     def load_from_DataFrame(self, df, fmt_type=None):
         assert (isinstance(df, pandas.DataFrame))
         if fmt_type is None:
@@ -179,6 +206,7 @@ class TrajectoryEstimated(Trajectory):
         self.set_format(CSVSpatialFormat(fmt_type, est_err_type=est_err_type, err_rep_type=err_rep_type))
         return True
 
+    # overriding abstract method
     def to_DataFrame(self):
         if self.format.type == CSVSpatialFormatType.PosOrientWithCov:
             return PosOrientWithCov2DataFrame.to_DataFrame(self.t_vec, self.p_vec, self.q_vec, self.Sigma_p_vec,

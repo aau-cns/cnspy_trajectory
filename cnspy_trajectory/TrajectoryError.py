@@ -94,6 +94,7 @@ class TrajectoryError(Trajectory):
         rmse_deg_vec = np.rad2deg(rmse_rad_vec)
         return rmse_rad_vec, rmse_deg_vec
 
+    # overriding abstract method
     def load_from_DataFrame(self, df, fmt_type=None):
         assert (isinstance(df, pandas.DataFrame))
         if fmt_type is None:
@@ -115,10 +116,16 @@ class TrajectoryError(Trajectory):
         self.traj_err_type = TrajectoryErrorType(est_err_type)
         self.format_type = fmt_type
 
+    # overriding abstract method
     def to_DataFrame(self):
         est_err_type_vec = np.repeat(str(self.traj_err_type.err_type), self.num_elems(), axis=0)
         scale_vec = np.repeat(self.scale, self.num_elems(), axis=0)
         return PoseTypedStamped2DataFrame.to_DataFrame(self.t_vec, self.p_vec, self.q_vec, scale_vec, est_err_type_vec)
+
+    # overriding abstract method
+    def clone(self):
+        return TrajectoryError(t_vec=self.t_vec.copy(), p_vec=self.p_vec.copy(), q_vec=self.q_vec.copy(),
+                              scale=self.scale, traj_err_type=self.traj_err_type)
 
     ########### PLOTTING #################
     def plot_p_err(self, cfg=TrajectoryPlotConfig(), fig=None, ax=None):

@@ -68,6 +68,7 @@ class TrajectoryEstimationError(TrajectoryBase):
             self.err_rep_type = err_rep_type
         pass
 
+    # overriding abstract method
     def subsample(self, step=None, num_max_points=None, verbose=False):
         sparse_indices = TrajectoryBase.subsample(self, step=step, num_max_points=num_max_points, verbose=verbose)
         self.nu_vec = self.nu_vec[sparse_indices]
@@ -75,7 +76,22 @@ class TrajectoryEstimationError(TrajectoryBase):
 
         return sparse_indices
 
+    # overriding abstract method
+    def sample(self, indices_arr, verbose=False):
+        TrajectoryBase.sample(self, indices_arr=indices_arr)
+        self.nu_vec = self.nu_vec[indices_arr]
+        self.theta_vec = self.theta_vec[indices_arr]
 
+    # overriding abstract method
+    def clone(self):
+        obj = TrajectoryEstimationError(t_vec=self.t_vec.copy(),
+                                        nu_vec=self.nu_vec.copy(),
+                                        theta_vec=self.theta_vec.copy(),
+                                        est_err_type=self.est_err_type,
+                                        err_rep_type=self.err_rep_type)
+        return obj
+
+    # overriding abstract method
     def load_from_DataFrame(self, df, fmt_type=None):
         assert (isinstance(df, pandas.DataFrame))
         if fmt_type is None:
@@ -94,6 +110,7 @@ class TrajectoryEstimationError(TrajectoryBase):
         self.est_err_type = est_err_type
         self.err_rep_type = err_rep_type
 
+    # overriding abstract method
     def to_DataFrame(self):
         est_err_type_vec = np.tile(self.est_err_type.str(), (self.num_elems(), 1))
         err_rep_vec = np.tile(self.err_rep_type.str(), (self.num_elems(), 1))

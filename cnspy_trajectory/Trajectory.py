@@ -20,7 +20,6 @@
 # enum
 ########################################################################################################################
 import math
-import os
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # <--- This is important for 3d plotting
@@ -28,8 +27,6 @@ from mpl_toolkits.mplot3d import Axes3D  # <--- This is important for 3d plottin
 from spatialmath import base, SE3
 
 from cnspy_csv2dataframe.TUMCSV2DataFrame import TUMCSV2DataFrame
-from cnspy_csv2dataframe.CSV2DataFrame import CSV2DataFrame
-from cnspy_spatial_csv_formats.CSVSpatialFormatType import CSVSpatialFormatType
 from cnspy_trajectory.TrajectoryBase import TrajectoryBase
 from cnspy_trajectory.PlotLineStyle import PlotLineStyle
 from cnspy_trajectory.TrajectoryPlotConfig import TrajectoryPlotConfig
@@ -78,12 +75,20 @@ class Trajectory(TrajectoryBase):
             self.p_vec = p_vec
             self.q_vec = q_vec
 
+    # overriding abstract method
     def subsample(self, step=None, num_max_points=None, verbose=False):
         sparse_indices = TrajectoryBase.subsample(self, step=step, num_max_points=num_max_points, verbose=verbose)
         self.p_vec = self.p_vec[sparse_indices]
         self.q_vec = self.q_vec[sparse_indices]
         return sparse_indices
 
+    # overriding abstract method
+    def sample(self, indices_arr, verbose=False):
+        TrajectoryBase.sample(self, indices_arr=indices_arr)
+        self.p_vec = self.p_vec[indices_arr]
+        self.q_vec = self.q_vec[indices_arr]
+
+    # overriding abstract method
     def clone(self):
         return Trajectory(t_vec=self.t_vec.copy(), p_vec=self.p_vec.copy(), q_vec=self.q_vec.copy())
 

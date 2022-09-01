@@ -25,19 +25,14 @@ import numpy as np
 import pandas
 
 from cnspy_csv2dataframe.CSV2DataFrame import CSV2DataFrame
+from cnspy_timestamp_association.TimestampAssociation import TimestampAssociation
 
 
+# abstract methods:
+# - to_DataFrame(self):
+# - load_from_DataFrame(self, df, fmt_type=None)
 class TrajectoryBase(ABC):
     t_vec = None
-
-    def is_empty(self):
-        return self.num_elems() == 0
-
-    def num_elems(self):
-        if self.t_vec is None:
-            return 0
-        else:
-            return len(self.t_vec)
 
     @abstractmethod
     def to_DataFrame(self):
@@ -67,6 +62,45 @@ class TrajectoryBase(ABC):
 
         return sparse_indices
 
+    @abstractmethod
+    def sample(self, indices_arr, verbose=False):
+        num_elems = self.num_elems()
+        assert (len(indices_arr) <= num_elems), "TrajectoryBase.sample():\n\t index array must be smaller " \
+                                                "equal the dataframe."
+        assert (max(indices_arr) <= num_elems), "TrajectoryBase.sample():\n\t elemts in the index array " \
+                                                "must be smaller equal the dataframe."
+
+        assert (min(indices_arr) >= 0), "TrajectoryBase.sample():\n\t elemts in the index array " \
+                                        "must be greater equal zero."
+        if verbose:
+            print("TrajectoryBase.sample():")
+            print("* current len: " + str(num_elems) + ", take N-samples: " + len(indices_arr))
+
+        self.t_vec = self.t_vec[indices_arr]
+
+    @abstractmethod
+    def clone(self):
+        pass
+
+
+    def is_empty(self):
+        return self.num_elems() == 0
+
+    def num_elems(self):
+        if self.t_vec is None:
+            return 0
+        else:
+            return len(self.t_vec)
+
+    def sample_at_t_arr(self, t_arr, max_difference=0, round_decimals=9, unique_timestamps=False):
+        indices_arr, idx_t, t_vec_matched, t_arr_matched = \
+            TimestampAssociation.associate_timestamps(self.t_vec, t_arr,
+                                                      max_difference=max_difference,
+                                                      round_decimals=round_decimals,
+                                                      unique_timestamps=unique_timestamps)
+        # call abstract method
+        self.sample(indices_arr)
+        return idx_t, t_arr_matched
 
     def load_from_CSV(self, fn):
         if not os.path.isfile(fn):
