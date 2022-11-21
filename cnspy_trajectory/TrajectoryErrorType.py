@@ -45,7 +45,7 @@ class TrajectoryErrorType:
     def is_global_p_local_q(self):
         return self.err_type == EstimationErrorType.type5
 
-    def is_local_p_global_q(self):
+    def is_global_p_global_q(self):
         return self.err_type == EstimationErrorType.type6
 
     def is_local_rotation_error(self):
@@ -69,6 +69,9 @@ class TrajectoryErrorType:
         if self.err_type == EstimationErrorType.type5:
             p_err_text = '(p_EST - p_GT)'
             R_err_text = '(inv(R_GT) * R_EST)'
+        elif self.err_type == EstimationErrorType.type6:
+            p_err_text = '(p_EST - p_GT)'
+            R_err_text = '(R_GT * inv(R_EST))'
         elif self.err_type == EstimationErrorType.type1:
             p_err_text = '(R_EST^(T)(p_EST - p_GT))'
             R_err_text = '(inv(R_EST) * R_GT)'
@@ -90,7 +93,7 @@ class TrajectoryErrorType:
         return TrajectoryErrorType(err_type=EstimationErrorType.type5)
 
     @staticmethod
-    def local_p_global_q():
+    def global_p_global_q():
         return TrajectoryErrorType(err_type=EstimationErrorType.type6)
 
     @staticmethod
