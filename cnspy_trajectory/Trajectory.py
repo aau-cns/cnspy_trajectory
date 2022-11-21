@@ -390,7 +390,7 @@ class Trajectory(TrajectoryBase):
             base.trplot(T.A, axes=ax, frame=origin_name, rviz=True, length=1, width=0.2, block=False)
 
         if num_markers > 0 and not self.is_empty():
-            for i in range(1, self.num_elems(), int(self.num_elems() / num_markers)):
+            for i in range(1, self.num_elems(), max(1, int(self.num_elems() / num_markers))):
                 T_i = SpatialConverter.p_q_HTMQ_to_SE3(self.p_vec[i, :], self.q_vec[i, :])
                 base.trplot(T_i.A, axes=ax, rviz=True,
                             length=1, width=0.1, block=False)

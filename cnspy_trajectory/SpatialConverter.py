@@ -121,7 +121,7 @@ class SpatialConverter:
         T = np.identity(4)
         T[0:3, 0:3] = R_AB
         T[:3, 3] = p_AB_in_A
-        T_AB = SE3(T)
+        T_AB = SE3(T, check=False)
         return T_AB
 
     @staticmethod
