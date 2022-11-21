@@ -74,8 +74,9 @@ class TrajectoryPlotConfig():
     def show_save_figure(cfg, fig):
         assert (isinstance(cfg, TrajectoryPlotConfig))
         assert(isinstance(fig, plt.Figure))
+        plt.pause(0.01)
         plt.draw()
-        plt.pause(0.001)
+        plt.pause(0.01)
         if cfg.save_fn:
             if not os.path.exists(cfg.result_dir):
                 os.makedirs(cfg.result_dir)
