@@ -89,6 +89,34 @@ class TrajectoryEstimated(Trajectory):
     def get_format(self):
         return self.format
 
+    def convert_to_global_covariance(self):
+        # Covariance of pose is expressed in the local frame
+        if self.format.estimation_error_type == EstimationErrorType.type1:
+            if self.Sigma_T_vec is not None:
+                for i in range(self.num_elems()):
+                    T_AB = SpatialConverter.p_q_HTMQ_to_SE3(self.p_vec[i,:], self.q_vec[i,:])
+                    Adj_AB = base.tr2adjoint(T_AB)
+
+                    # Sigma expressed in Navigation frame
+                    Sigma_NB = self.Sigma_T_vec[i, :, :]
+                    Sigma_GB = np.dot(Adj_AB, np.dot(Sigma_NB, Adj_AB.T))
+                    self.Sigma_T_vec[i, :, :] = Sigma_GB
+
+            self.format.estimation_error_type = EstimationErrorType.type2
+        # Covariance of orientation is defined locally
+        elif self.format.estimation_error_type == EstimationErrorType.type5:
+            if self.Sigma_R_vec is not None:
+                for i in range(self.num_elems()):
+                    # Sigma expressed in Navigation frame
+                    Sigma_q_NB = self.Sigma_R_vec[i, :, :]
+                    R_GN = SpatialConverter.HTMQ_quaternion_to_rot(self.q_vec[i,:])
+                    Sigma_q_GB = np.dot(R_GN, np.dot(Sigma_q_NB, R_GN.T))
+                    self.Sigma_R_vec[i, :, :] = Sigma_q_NB
+        # Covariance of position and orientation is defined globally
+            self.format.estimation_error_type = EstimationErrorType.type6
+
+        pass
+
     # overriding abstract method
     def transform(self, scale=1.0, p_GN_in_G=np.zeros((3,)), R_GN=np.identity(3)):
         # Calling the parent's class
