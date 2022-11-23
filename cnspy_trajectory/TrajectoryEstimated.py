@@ -268,21 +268,36 @@ class TrajectoryEstimated(Trajectory):
     def get_p_N_sigma_data(self, cfg, sigma_N=3.0):
         assert (isinstance(cfg, TrajectoryPlotConfig))
 
+        negative_variance_detected = False
+
         sigma_p_diag_vec = np.zeros(np.shape(self.p_vec))
         if self.format.type == CSVSpatialFormatType.PosOrientWithCov or self.format.type == CSVSpatialFormatType.PosOrientWithCovTyped:
             for i in range(self.num_elems()):
                 P = self.Sigma_p_vec[i]
-                sigma_p_diag_vec[i] = np.sqrt(np.diag(P))
+                d_variance = np.diag(P)
+                if min(d_variance) < 0:
+                    negative_variance_detected = True
+                    d_variance = abs(d_variance)
+
+                sigma_p_diag_vec[i] = np.sqrt(d_variance)
 
         elif self.format.type == CSVSpatialFormatType.PoseWithCov or self.format.type == CSVSpatialFormatType.PoseWithCovTyped :
             for i in range(self.num_elems()):
                 P = self.Sigma_T_vec[i]
-                sigma_p_diag_vec[i] = np.sqrt(np.diag(P[[0,1,2], [0,1,2]]))
+
+                d_variance = np.diag(P[[0,1,2], [0,1,2]])
+                if min(d_variance) < 0:
+                    negative_variance_detected = True
+                    d_variance = abs(d_variance)
+
+                sigma_p_diag_vec[i] = np.sqrt(d_variance)
         else:
             print('format ' + str(self.format.type) + ' not supported!')
             assert False
         sigma_N_diag_vec = sigma_p_diag_vec * sigma_N
 
+        if negative_variance_detected:
+            print('WARNING: TrajectoryEstimated.get_p_N_sigma_data(): negative variance detected!')
 
         # sigma3_diag_vec = np.zeros(np.shape(self.p_vec))
         # if self.format.rotation_error_representation == ErrorRepresentationType.theta_R:
@@ -322,17 +337,31 @@ class TrajectoryEstimated(Trajectory):
     def get_rpy_N_sigma_data(self, cfg, sigma_N=3.0):
         assert (isinstance(cfg, TrajectoryPlotConfig))
 
+        negative_variance_detected = False
+
         sigma_theta_diag_vec = np.zeros(np.shape(self.p_vec))
         if self.format.type == CSVSpatialFormatType.PosOrientWithCov or self.format.type == CSVSpatialFormatType.PosOrientWithCovTyped:
             for i in range(self.num_elems()):
-                sigma_theta_diag_vec[i] = np.sqrt(np.diag(self.Sigma_R_vec[i]))
+                d_variance = np.diag(self.Sigma_R_vec[i])
+                if min(d_variance) < 0:
+                    negative_variance_detected = True
+                    d_variance = abs(d_variance)
+                sigma_theta_diag_vec[i] = np.sqrt(d_variance)
         elif self.format.type == CSVSpatialFormatType.PoseWithCov or self.format.type == CSVSpatialFormatType.PoseWithCovTyped:
             for i in range(self.num_elems()):
                 P = self.Sigma_T_vec[i]
-                sigma_theta_diag_vec[i] = np.sqrt(np.diag(P[[0, 1, 2], [0, 1, 2]]))
+                d_variance = np.diag(P[[3,4,5], [3,4,5]])
+                if min(d_variance) < 0:
+                    negative_variance_detected = True
+                    d_variance = abs(d_variance)
+                sigma_theta_diag_vec[i] = np.sqrt(d_variance)
+
         else:
             print('format ' + str(self.format.type) + ' not supported!')
             assert False
+
+        if negative_variance_detected:
+            print('WARNING: TrajectoryEstimated.get_rpy_N_sigma_data(): negative variance detected!')
 
         sigma_rpy_diag_vec = np.zeros(np.shape(self.p_vec))
 
