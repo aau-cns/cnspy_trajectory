@@ -26,7 +26,9 @@ from mpl_toolkits.mplot3d import Axes3D  # <--- This is important for 3d plottin
 # from mpl_toolkits.mplot3d import Axes3D  # <--- This is important for 3d plotting (copy, if accidentally auto-removed)
 from spatialmath import base, SE3
 
+import cnspy_numpy_utils.numpy_statistics
 from cnspy_csv2dataframe.TUMCSV2DataFrame import TUMCSV2DataFrame
+from cnspy_numpy_utils.numpy_statistics import numpy_statistics
 from cnspy_trajectory.TrajectoryBase import TrajectoryBase
 from cnspy_trajectory.PlotLineStyle import PlotLineStyle
 from cnspy_trajectory.TrajectoryPlotConfig import TrajectoryPlotConfig
@@ -167,9 +169,25 @@ class Trajectory(TrajectoryBase):
         self.p_vec = p_GB_in_G_arr
         self.q_vec = q_GB_arr
 
+
+    def print_statistics(self, file=None):
+        metrics_pos = numpy_statistics(self.p_vec)
+        metrics_rpy = numpy_statistics(self.get_rpy_vec())
+        distance = self.get_distance()
+        cnspy_numpy_utils.numpy_statistics.print_statistics(metrics_pos, desc='xyz', file=file)
+        cnspy_numpy_utils.numpy_statistics.print_statistics(metrics_rpy, desc='rpy', file=file)
+        if file is not None:
+            print("distance   %fm" % (distance), file=file)
+        else:
+            print("distance   %fm" % (distance))
+
+        metrics = {'xyz' : metrics_pos, 'rpy' : metrics_rpy, 'dist' : distance}
+        return metrics
+
     @staticmethod
     def distances_from_start(p_vec):
         distances = np.diff(p_vec[:, 0:3], axis=0)
+        # Euclidean distances
         distances = np.sqrt(np.sum(np.multiply(distances, distances), axis=1))
         distances = np.cumsum(distances)
         distances = np.concatenate(([0], distances))
@@ -428,6 +446,11 @@ class Trajectory(TrajectoryBase):
                 self.ax_plot_rpy(ax=ax2, cfg=cfg)
             else:
                 self.ax_plot_q(ax=ax2, cfg=cfg)
+
+        ax1.legend(shadow=True, fontsize='x-small')
+        ax1.grid(b=True)
+        ax2.legend(shadow=True, fontsize='x-small')
+        ax2.grid(b=True)
 
         TrajectoryPlotConfig.show_save_figure(cfg, fig)
         return fig, ax1, ax2

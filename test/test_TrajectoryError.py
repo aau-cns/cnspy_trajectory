@@ -62,3 +62,4 @@ class TrajectoryError_Test(unittest.TestCase):
                                    save_fn=str(SAMPLE_DATA_DIR + '/../../doc/traj_err_rpy.png'))
 
         traj_err.plot_rpy_err(cfg=cfg)
+
