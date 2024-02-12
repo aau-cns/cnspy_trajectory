@@ -1,3 +1,22 @@
+#!/usr/bin/env python
+# Software License Agreement (GNU GPLv3  License)
+#
+# Copyright (c) 2020, Roland Jung (roland.jung@aau.at) , AAU, KPK, NAV
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+########################################################################################################################
+
 import time
 import os
 import argparse
@@ -68,7 +87,7 @@ if __name__ == "__main__":
     # test4: python3 ROSbag2CSV.py --bagfile ./sample_data/empty_bag.bag --topics /uwb_trilateration/tagDistance_raw /pose_sensor/pose /fcu/current_pose --verbose  --filenames uwb /rasdf/body_pose imu_pose.csv
     # test5: python3 ROSbag2CSV.py --bagfile ./sample_data/dummy.bag --topics /pose_est /pose_gt --verbose  --filenames est gt --format TUM
     parser = argparse.ArgumentParser(
-        description='Trajectory: extract and store given topics of a rosbag into a CSV file')
+        description='PlotTrajectory: tool to save plots and metrics of a trajectory')
     parser.add_argument('--filename', help='csv filename', default="not specified")
     parser.add_argument('--result_dir', help='directory to store results]',
                         default='')
