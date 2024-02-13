@@ -41,6 +41,25 @@ It is part of the [cnspy eco-system](hhttps://github.com/aau-cns/cnspy_eco_syste
 * [cnspy_trajectory](https://github.com/aau-cns/cnspy_trajectory)  
 * [matplotlib.pyplot]()
 
+## [PlotTrajectory](./PlotTrajectory.py)
+
+```commandline
+trajectory$ python PlotTrajectory.py -h
+usage: PlotTrajectory.py [-h] [--filename FILENAME] [--result_dir RESULT_DIR] [--verbose] [--plot_3D] [--plot_pose] [--show_plots] [--save_metrics]
+
+PlotTrajectory: tool to save plots and metrics of a trajectory
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --filename FILENAME   csv filename
+  --result_dir RESULT_DIR
+                        directory to store results]
+  --verbose
+  --plot_3D
+  --plot_pose
+  --show_plots
+  --save_metrics
+```
 
 ## Examples
 

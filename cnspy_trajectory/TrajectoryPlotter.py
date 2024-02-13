@@ -72,7 +72,7 @@ class TrajectoryPlotter:
         return fig, ax1, ax2, ax3, ax4
 
     @staticmethod
-    def multi_plot_3D(traj_list, cfg, name_list=[]):
+    def multi_plot_3D(traj_list, cfg, name_list=None, color_map="gist_rainbow"):
         assert (isinstance(cfg, TrajectoryPlotConfig))
         num_plots = len(traj_list)
 
@@ -80,13 +80,17 @@ class TrajectoryPlotter:
         ax = fig.add_subplot(111, projection='3d')
 
         # https://stackoverflow.com/questions/51452112/how-to-fix-cm-spectral-module-matplotlib-cm-has-no-attribute-spectral
-        cmap = plt.cm.get_cmap("Spectral")
-        colors = cmap(np.linspace(0.1, 0.9, num_plots))
+        # choose among: https://matplotlib.org/stable/users/explain/colors/colormaps.html#miscellaneous
+        cmap = plt.cm.get_cmap(color_map)
+        colors = cmap(np.linspace(0.01, 0.99, num_plots))
         ax.set_prop_cycle('color', colors)
 
         idx = 0
         for traj in traj_list:
-            traj.ax_plot_pos_3D(ax=ax, cfg=cfg, label=name_list[idx])
+            label = "traj" + str(idx)
+            if name_list:
+                label = name_list[idx]
+            traj.ax_plot_pos_3D(ax=ax, cfg=cfg, label=label)
             idx += 1
 
         ax.legend(shadow=True, fontsize='x-small')
@@ -94,6 +98,8 @@ class TrajectoryPlotter:
         ax.set_xlabel('x')
         ax.set_ylabel('y')
         ax.set_zlabel('z')
+
+        set_axes_equal(ax)
         TrajectoryPlotConfig.set_view_angle(cfg=cfg, ax=ax)
         plt.draw()
         plt.pause(0.001)
