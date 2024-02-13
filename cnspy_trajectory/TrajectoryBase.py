@@ -106,10 +106,13 @@ class TrajectoryBase(ABC):
         if not os.path.isfile(fn):
             print("TrajectoryBase: could not find file %s" % os.path.abspath(fn))
             return False
-
-        loader = CSV2DataFrame(fn=fn)
-        self.load_from_DataFrame(loader.data_frame, fmt_type=loader.format)
-        return loader.data_loaded
+        try:
+            loader = CSV2DataFrame(fn=fn)
+            self.load_from_DataFrame(loader.data_frame, fmt_type=loader.format)
+            return loader.data_loaded
+        except:
+            print("TrajectoryBase: could not load file %s" % os.path.abspath(fn))
+            return False
 
     def save_to_CSV(self, fn):
         if self.is_empty():
