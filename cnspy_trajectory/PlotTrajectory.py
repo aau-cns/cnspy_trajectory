@@ -119,7 +119,7 @@ class PlotTrajectory:
         return True
 
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(
         description='PlotTrajectory: tool to save plots and metrics of a trajectory')
     parser.add_argument('--filename', help='csv filename', default=None)
@@ -146,3 +146,9 @@ if __name__ == "__main__":
         PlotTrajectory.plot_multi(args.filenames, result_dir=args.result_dir, show_plots=args.show_plots, verbose=args.verbose)
 
     print("finished after [%s sec]\n" % str(time.time() - tp_start))
+    pass
+
+
+if __name__ == "__main__":
+    main()
+    pass
