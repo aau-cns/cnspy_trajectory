@@ -142,6 +142,12 @@ class SpatialConverter:
         return base.tr2rpy(T=R, unit=unit, order='zyx')
 
     @staticmethod
+    def quat2rpy(q, unit='rad'):
+        # R = rotz(angles[2]) @ roty(angles[1]) @ rotx(angles[0])
+        quad = SpatialConverter.HTMQ_quaternion_to_Quaternion(q)
+        return base.tr2rpy(T=quad.R, unit=unit, order='zyx')
+
+    @staticmethod
     def quat2theta_q(q_err):
         """
         converts a rotation represented by a quaternion in its small angle approximation
@@ -212,6 +218,7 @@ class SpatialConverter:
 
     @staticmethod
     def convert_q_vec_to_theta_vec(q_vec, rot_err_rep):
+        # q_vec: expect HTMQ quaternion format [x,y,z,w]
         assert (isinstance(rot_err_rep, ErrorRepresentationType))
         # q_vec as vector of  HTMQ_quaternions
         len, q_cols = q_vec.shape
@@ -228,6 +235,9 @@ class SpatialConverter:
         elif rot_err_rep == ErrorRepresentationType.theta_so3:
             for i in range(len):
                 theta_vec[i] = SpatialConverter.quat2theta_so3(q_vec[i])
+        elif rot_err_rep == ErrorRepresentationType.rpy_rad:
+            for i in range(len):
+                theta_vec[i] = SpatialConverter.quat2rpy(q_vec[i])
         else:
             assert False, 'format is not supported: ' + str(rot_err_rep)
 
