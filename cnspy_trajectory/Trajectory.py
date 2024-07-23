@@ -20,6 +20,8 @@
 # enum
 ########################################################################################################################
 import math
+
+import numpy
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # <--- This is important for 3d plotting
@@ -38,11 +40,11 @@ from cnspy_trajectory.TrajectoryPlotUtils import TrajectoryPlotUtils
 from cnspy_trajectory.SpatialConverter import SpatialConverter
 from cnspy_trajectory.pyplot_utils import set_axes_equal
 
-
+# TODO: change quaternion order in the entire framework!
 class Trajectory(TrajectoryBase):
     #t_vec = None
     p_vec = None
-    q_vec = None
+    q_vec = None # [x,y,z,w]
     dist = None  # cache
 
     def __init__(self, t_vec=None, p_vec=None, q_vec=None, df=None, fn=None):
@@ -63,6 +65,8 @@ class Trajectory(TrajectoryBase):
         elif t_vec is not None and p_vec is not None and q_vec is not None:
             if t_vec.ndim == 1:
                 t_vec = np.array([t_vec])
+            if t_vec.shape[0] == 1 and t_vec.shape[1] > 1:
+                t_vec = t_vec.T
 
             t_rows, t_cols = t_vec.shape
             p_rows, p_cols = p_vec.shape
@@ -135,8 +139,11 @@ class Trajectory(TrajectoryBase):
         rpy_vec = np.zeros(np.shape(self.p_vec))
         for i in range(np.shape(self.p_vec)[0]):
             q = SpatialConverter.HTMQ_quaternion_to_Quaternion(self.q_vec[i, :])
-            rpy_vec[i, :] = q.unit().rpy(order='zyx')
+            rpy = q.unit().rpy(order='zyx')
+            rpy2= (rpy + np.pi) % (2 * np.pi) - np.pi
+            rpy_vec[i, :] = rpy2
 
+        #rpy_vec = np.unwrap(rpy_vec, axis=0)
         return rpy_vec
 
     def get_angle_axis_vec(self, unit='rad'):
@@ -277,7 +284,8 @@ class Trajectory(TrajectoryBase):
 
         rpy_vec = self.get_rpy_vec()
 
-        rpy_vec = np.unwrap(rpy_vec, axis=0)
+        if cfg.unwrap:
+            rpy_vec = np.unwrap(rpy_vec, axis=0)
         if not cfg.radians:
             rpy_vec = np.rad2deg(rpy_vec)
 
