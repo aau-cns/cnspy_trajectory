@@ -226,3 +226,54 @@ class TrajectoryError(Trajectory):
         TrajectoryPlotConfig.show_save_figure(cfg, fig)
 
         return fig, ax1, ax2, ax3, ax4
+
+
+    @staticmethod
+    def plot_pose(traj_est, traj_gt, fig=None, cfg=None, angles=False, plot_rpy=False):
+        assert(isinstance(traj_gt, Trajectory))
+        assert(isinstance(traj_est, Trajectory))
+        assert (isinstance(cfg, TrajectoryPlotConfig))
+
+        if fig is None:
+            fig = plt.figure(figsize=(20, 15), dpi=int(cfg.dpi))
+
+        # create 2x2 grid
+        ax1 = fig.add_subplot(221)
+        ax2 = fig.add_subplot(222)
+        ax3 = fig.add_subplot(223)
+        ax4 = fig.add_subplot(224)
+
+        # Error type text:
+        traj_est.ax_plot_pos(ax=ax1, cfg=cfg)
+        traj_gt.ax_plot_pos(ax=ax2, cfg=cfg, y_label_prefix='true ',
+                            colors=['darkred', 'darkgreen', 'darkblue'],
+                            ls=PlotLineStyle(linestyle='-.'))
+
+        ax1.set_ylabel('position est [m]')
+        ax2.set_ylabel('position gt [m]')
+
+        if angles:
+            traj_est.ax_plot_rpy(ax=ax3, cfg=cfg)
+            traj_gt.ax_plot_rpy(ax=ax4, cfg=cfg, colors=['darkred', 'darkgreen', 'darkblue'],
+                                ls=PlotLineStyle(linestyle='-.'))
+
+            if cfg.radians:
+                ax3.set_ylabel('rotation est [rad]')
+                ax4.set_ylabel('rotation gt [rad]')
+            else:
+                ax3.set_ylabel('rotation est [deg]')
+                ax4.set_ylabel('rotation gt [deg]')
+        else:
+            traj_est.ax_plot_q(ax=ax3, cfg=cfg)
+            traj_gt.ax_plot_q(ax=ax4, cfg=cfg,
+                                  ls=PlotLineStyle(linestyle='-.'))
+            ax4.set_ylabel('quaternion')
+
+        ax1.grid(visible=True)
+        ax2.grid(visible=True)
+        ax3.grid(visible=True)
+        ax4.grid(visible=True)
+
+        TrajectoryPlotConfig.show_save_figure(cfg, fig)
+
+        return fig, ax1, ax2, ax3, ax4
