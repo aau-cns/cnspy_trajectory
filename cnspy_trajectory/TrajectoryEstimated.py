@@ -383,7 +383,17 @@ class TrajectoryEstimated(Trajectory):
                 R = SpatialConverter.theta_so3_2rot(sigma_theta_diag_vec[i])
                 sigma_rpy_diag_vec[i] = SpatialConverter.rot2rpy(R, unit=unit)
         elif self.format.rotation_error_representation == ErrorRepresentationType.rpy_rad:
-            sigma_rpy_diag_vec = sigma_theta_diag_vec
+            if cfg.radians:
+                sigma_rpy_diag_vec = sigma_theta_diag_vec
+            else:
+                for i in range(self.num_elems()):
+                    sigma_rpy_diag_vec[i] = np.rad2deg(sigma_theta_diag_vec[i])
+        elif self.format.rotation_error_representation == ErrorRepresentationType.rpy_degree:
+            if not cfg.radians:
+                sigma_rpy_diag_vec = sigma_theta_diag_vec
+            else:
+                for i in range(self.num_elems()):
+                    sigma_rpy_diag_vec[i] = np.deg2rad(sigma_theta_diag_vec[i])
         else:
             print('format is not supported: ' + str(self.format.rotation_error_representation))
             assert False
