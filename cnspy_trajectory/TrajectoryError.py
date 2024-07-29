@@ -165,7 +165,7 @@ class TrajectoryError(Trajectory):
 
 
     @staticmethod
-    def plot_pose_err(traj_est, traj_err, fig=None, cfg=None, angles=False, plot_rpy=False, traj_gt=None):
+    def plot_pose_err(traj_est, traj_err, fig=None, cfg=None, angles=False, plot_rpy=False, traj_gt=None, axes=None):
         assert(isinstance(traj_err, TrajectoryError))
         assert(isinstance(traj_est, Trajectory))
         assert (isinstance(cfg, TrajectoryPlotConfig))
@@ -173,11 +173,17 @@ class TrajectoryError(Trajectory):
         if fig is None:
             fig = plt.figure(figsize=(20, 15), dpi=int(cfg.dpi))
 
-        # create 2x2 grid
-        ax1 = fig.add_subplot(221)
-        ax2 = fig.add_subplot(222)
-        ax3 = fig.add_subplot(223)
-        ax4 = fig.add_subplot(224)
+        if axes is None or len(axes) < 4:
+            # create 2x2 grid
+            ax1 = fig.add_subplot(221)
+            ax2 = fig.add_subplot(222)
+            ax3 = fig.add_subplot(223)
+            ax4 = fig.add_subplot(224)
+        else:
+            ax1 = axes[0]
+            ax2 = axes[1]
+            ax3 = axes[2]
+            ax4 = axes[3]
 
         # Error type text:
         p_err_text, R_err_text = traj_err.traj_err_type.error_def()
