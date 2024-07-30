@@ -439,13 +439,13 @@ class TrajectoryEstimated(Trajectory):
         ts, xs, ys, zs, dist_vec = self.get_rpy_N_sigma_data(cfg, sigma_N=sigma_N)
 
         TrajectoryPlotUtils.ax_plot_rpy(ax=ax,ts=ts, xs=xs, ys=ys, zs=zs, dist_vec=dist_vec,
-                                        x_label_prefix=x_label_prefix, y_label_prefix=str(sigma_N)+y_label_prefix,
+                                        x_label_prefix=x_label_prefix, y_label_prefix=str(sigma_N)+" "+y_label_prefix,
                                         plot_type=cfg.plot_type,
                                         radians=cfg.radians,
                                         relative_time=cfg.relative_time,
                                         colors=colors, labels=labels, ls=ls)
         TrajectoryPlotUtils.ax_plot_rpy(ax=ax,ts=ts, xs=-xs, ys=-ys, zs=-zs, dist_vec=dist_vec,
-                                        x_label_prefix=x_label_prefix, y_label_prefix=str(sigma_N)+y_label_prefix,
+                                        x_label_prefix=x_label_prefix, y_label_prefix=str(sigma_N)+" "+y_label_prefix,
                                         plot_type=cfg.plot_type,
                                         radians=cfg.radians,
                                         relative_time=cfg.relative_time,
@@ -463,12 +463,12 @@ class TrajectoryEstimated(Trajectory):
         ts, xs, ys, zs, dist_vec = self.get_p_N_sigma_data(cfg, sigma_N=sigma_N)
 
         TrajectoryPlotUtils.ax_plot_pos(ax=ax, ts=ts, xs=xs, ys=ys, zs=zs, dist_vec=dist_vec,
-                                        x_label_prefix=x_label_prefix, y_label_prefix=str(sigma_N)+y_label_prefix,
+                                        x_label_prefix=x_label_prefix, y_label_prefix=str(sigma_N)+" "+y_label_prefix,
                                         plot_type=cfg.plot_type,
                                         relative_time=cfg.relative_time,
                                         colors=colors, labels=labels, ls=ls)
         TrajectoryPlotUtils.ax_plot_pos(ax=ax, ts=ts, xs=-xs, ys=-ys, zs=-zs, dist_vec=dist_vec,
-                                        x_label_prefix=x_label_prefix, y_label_prefix=str(sigma_N)+y_label_prefix,
+                                        x_label_prefix=x_label_prefix, y_label_prefix=str(sigma_N)+" "+y_label_prefix,
                                         plot_type=cfg.plot_type,
                                         relative_time=cfg.relative_time,
                                         colors=colors, labels=labels, ls=ls)
