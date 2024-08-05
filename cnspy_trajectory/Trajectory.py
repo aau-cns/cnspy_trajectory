@@ -26,11 +26,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # <--- This is important for 3d plotting
 # from mpl_toolkits.mplot3d import Axes3D  # <--- This is important for 3d plotting (copy, if accidentally auto-removed)
-from spatialmath import base, SE3
+from spatialmath import base, SE3, UnitQuaternion
 
 import cnspy_numpy_utils.numpy_statistics
 from cnspy_csv2dataframe.TUMCSV2DataFrame import TUMCSV2DataFrame
 from cnspy_numpy_utils.numpy_statistics import numpy_statistics
+from cnspy_spatial_csv_formats.CSVSpatialFormatType import CSVSpatialFormatType
 from cnspy_trajectory.TrajectoryBase import TrajectoryBase
 from cnspy_trajectory.PlotLineStyle import PlotLineStyle
 from cnspy_trajectory.TrajectoryPlotConfig import TrajectoryPlotConfig
@@ -47,7 +48,7 @@ class Trajectory(TrajectoryBase):
     q_vec = None # [x,y,z,w]
     dist = None  # cache
 
-    def __init__(self, t_vec=None, p_vec=None, q_vec=None, df=None, fn=None):
+    def __init__(self, t_vec=None, p_vec=None, q_vec=None, df=None, fn=None, fmt=None):
         """
             CTOR expects either a pandas.DataFrame or a (timestamp + position + quaternion) matrix
 
@@ -59,7 +60,7 @@ class Trajectory(TrajectoryBase):
         """
         TrajectoryBase.__init__(self)
         if df is not None:
-            self.load_from_DataFrame(df)
+            self.load_from_DataFrame(df, fmt_type=fmt)
         elif fn is not None:
             self.load_from_CSV(fn=fn)
         elif t_vec is not None and p_vec is not None and q_vec is not None:
@@ -100,7 +101,23 @@ class Trajectory(TrajectoryBase):
 
     # overriding abstract method
     def load_from_DataFrame(self, df, fmt_type=None):
-        self.t_vec, self.p_vec, self.q_vec = TUMCSV2DataFrame.from_DataFrame(data_frame=df)
+        if fmt_type is not None and fmt_type is CSVSpatialFormatType.Pose2DStamped:
+            self.t_vec = df[['t']].to_numpy()
+            p_vec = df[['tx', 'ty']].to_numpy()
+            yaw_vec = df[['yaw']].to_numpy()
+            N = len(df.index)
+
+            self.p_vec = np.hstack((p_vec, np.zeros((N, 1))))
+            # [N, [x,y,z,w]]
+            q_vec = np.hstack((np.zeros((N, 3)), np.ones((N, 1)) ))
+            for i in range(0, N):
+                yaw = yaw_vec[i, 0]
+                q_vec[i, 2] = yaw*0.5
+
+            self.q_vec = q_vec
+        else:
+            self.t_vec, self.p_vec, self.q_vec = TUMCSV2DataFrame.from_DataFrame(data_frame=df)
+
 
     # overriding abstract method
     def to_DataFrame(self):

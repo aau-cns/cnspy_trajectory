@@ -12,7 +12,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='cnspy_trajectory',
-    version="0.2.5",
+    version="0.2.6",
     author='Roland Jung',
     author_email='roland.jung@aau.at',    
     description='Trajectory in SE(3) space with utilities.',
@@ -32,7 +32,7 @@ setup(
     
     packages=find_packages(exclude=["test_*", "TODO*"]),
     python_requires='>=3.6',
-    install_requires=['numpy', 'matplotlib', 'cnspy_csv2dataframe', 'spatialmath-python', 'cnspy_spatial_csv_formats'],
+    install_requires=['numpy', 'matplotlib', 'cnspy_csv2dataframe>=0.2.2', 'spatialmath-python', 'cnspy_spatial_csv_formats>=0.2.2'],
     entry_points={
         'console_scripts': [
             'PlotTrajectory = cnspy_trajectory.PlotTrajectory:main',

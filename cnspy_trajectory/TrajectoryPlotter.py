@@ -51,6 +51,23 @@ from cnspy_trajectory.SpatialConverter import SpatialConverter
 class TrajectoryPlotter:
 
     @staticmethod
+    def plot_pose_err(traj_est, traj_err, cfg, fig=None, traj_gt=None):
+        assert (isinstance(traj_est, Trajectory))
+        assert (isinstance(traj_err, TrajectoryError))
+        assert (isinstance(cfg, TrajectoryPlotConfig))
+
+        # disable functionality
+        cfg_ = copy.deepcopy(cfg)
+        cfg_.show = False
+        cfg_.close = False
+        cfg_.save_fn = None
+        fig, ax1, ax2, ax3, ax4 = TrajectoryError.plot_pose_err(traj_est=traj_est, traj_err=traj_err,
+                                                                cfg=cfg_, fig=fig,
+                                                                angles=True, plot_rpy=True,
+                                                                traj_gt=traj_gt)
+        TrajectoryPlotConfig.show_save_figure(cfg, fig)
+        return fig, ax1, ax2, ax3, ax4
+    @staticmethod
     def plot_pose_err_cov(traj_est, traj_err, cfg, fig=None, traj_gt=None):
         assert (isinstance(traj_est, TrajectoryEstimated))
         assert (isinstance(traj_err, TrajectoryError))
