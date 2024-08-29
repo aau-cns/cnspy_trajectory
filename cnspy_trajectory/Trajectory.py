@@ -439,15 +439,20 @@ class Trajectory(TrajectoryBase):
                             length=1, width=0.1, block=False)
         pass
 
-    def ax_plot_pos_3D(self, ax, cfg, label='cnspy_trajectory'):
+    def ax_plot_pos_3D(self, ax, cfg, ls=PlotLineStyle()):
         assert (isinstance(cfg, TrajectoryPlotConfig))
 
         ts, xs, ys, zs, dist_vec = self.get_pos_data(cfg)
 
         if cfg.plot_type == TrajectoryPlotTypes.scatter_3D:
-            ax.scatter(xs, ys, zs, zdir='z', label=str(label))
+
+            s = np.ones((1, len(xs)))*ls.markersize
+
+            ax.scatter(xs, ys, zs, s=s, zdir='z', label=ls.label, linestyle=ls.linestyle,
+                    linewidth=ls.linewidth, marker=ls.marker, color=ls.linecolor)
         elif cfg.plot_type == TrajectoryPlotTypes.plot_3D:
-            ax.plot3D(xs, ys, zs, label=str(label))
+            ax.plot3D(xs, ys, zs, label=ls.label, linestyle=ls.linestyle,
+                    linewidth=ls.linewidth, color=ls.linecolor)
         pass
 
     def plot_pose(self, cfg=TrajectoryPlotConfig(), fig=None, quaternions=False, plot_angle_distance=False,
@@ -480,7 +485,7 @@ class Trajectory(TrajectoryBase):
         TrajectoryPlotConfig.show_save_figure(cfg, fig)
         return fig, ax1, ax2
 
-    def plot_3D(self, fig=None, ax=None, cfg=TrajectoryPlotConfig(), label='traj', num_markers=10):
+    def plot_3D(self, fig=None, ax=None, cfg=TrajectoryPlotConfig(), num_markers=10, ls=PlotLineStyle()):
         assert (isinstance(cfg, TrajectoryPlotConfig))
 
         if fig is None:
@@ -497,8 +502,9 @@ class Trajectory(TrajectoryBase):
             else:
                 ax.set_title("Plot3D")
 
-        self.ax_plot_pos_3D(ax=ax, cfg=cfg, label=label)
-        self.ax_plot_frames_3D(ax=ax, cfg=cfg, plot_origin=True, num_markers=num_markers)
+        self.ax_plot_pos_3D(ax=ax, cfg=cfg, ls=ls)
+        if num_markers  > 0:
+            self.ax_plot_frames_3D(ax=ax, cfg=cfg, plot_origin=True, num_markers=num_markers)
 
         set_axes_equal(ax)
         ax.legend(shadow=True, fontsize='x-small')

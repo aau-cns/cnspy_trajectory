@@ -25,6 +25,7 @@ import csv
 from tqdm import tqdm
 
 from cnspy_trajectory import TrajectoryPlotTypes
+from cnspy_trajectory.PlotLineStyle import PlotLineStyle
 from cnspy_trajectory.Trajectory import Trajectory
 from cnspy_trajectory.TrajectoryPlotConfig import TrajectoryPlotConfig
 from cnspy_trajectory.TrajectoryPlotTypes import TrajectoryPlotTypes
@@ -36,7 +37,8 @@ class PlotTrajectory:
         pass
 
     @staticmethod
-    def plot_single(fn, result_dir=None, verbose=False, plot_3D=True, plot_pose=True, show_plots=True, save_metrics=True):
+    def plot_single(fn, result_dir=None, verbose=False, plot_3D=True, plot_pose=True,
+                    show_plots=True, save_metrics=True, ls=PlotLineStyle()):
         if not os.path.isfile(fn):
             print("PlotTrajectory: could not find file: %s" % fn)
             return False
@@ -60,7 +62,7 @@ class PlotTrajectory:
             if plot_3D:
                 cfg = TrajectoryPlotConfig(show=show_plots, close_figure=True,
                                            save_fn=str(folder + '/plot_3D.png'))
-                traj.plot_3D(cfg=cfg)
+                traj.plot_3D(cfg=cfg, ls=ls)
             if plot_pose:
                 cfg=TrajectoryPlotConfig(show=show_plots,
                                          close_figure=True,

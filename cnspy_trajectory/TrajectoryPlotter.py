@@ -89,7 +89,7 @@ class TrajectoryPlotter:
         return fig, ax1, ax2, ax3, ax4
 
     @staticmethod
-    def multi_plot_3D(traj_list, cfg, name_list=None, color_map="gist_rainbow"):
+    def multi_plot_3D(traj_list, cfg, name_list=None, color_map="gist_rainbow", ls=PlotLineStyle()):
         assert (isinstance(cfg, TrajectoryPlotConfig))
         num_plots = len(traj_list)
 
@@ -107,7 +107,11 @@ class TrajectoryPlotter:
             label = "traj" + str(idx)
             if name_list:
                 label = name_list[idx]
-            traj.ax_plot_pos_3D(ax=ax, cfg=cfg, label=label)
+
+            ls_ = copy.deepcopy(ls)
+            ls_.linecolor = colors[idx, :]
+            ls_.label = label
+            traj.ax_plot_pos_3D(ax=ax, cfg=cfg, ls=ls_)
             idx += 1
 
         ax.legend(shadow=True, fontsize='x-small')
