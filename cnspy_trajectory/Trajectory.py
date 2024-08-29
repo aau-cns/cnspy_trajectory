@@ -64,6 +64,8 @@ class Trajectory(TrajectoryBase):
         elif fn is not None:
             self.load_from_CSV(fn=fn)
         elif t_vec is not None and p_vec is not None and q_vec is not None:
+            if isinstance(t_vec, list):
+                t_vec = np.array(t_vec)
             if t_vec.ndim == 1:
                 t_vec = np.array([t_vec])
             if t_vec.shape[0] == 1 and t_vec.shape[1] > 1:
@@ -478,9 +480,9 @@ class Trajectory(TrajectoryBase):
                 self.ax_plot_q(ax=ax2, cfg=cfg)
 
         ax1.legend(shadow=True, fontsize='x-small')
-        ax1.grid(b=True)
+        ax1.grid()
         ax2.legend(shadow=True, fontsize='x-small')
-        ax2.grid(b=True)
+        ax2.grid()
 
         TrajectoryPlotConfig.show_save_figure(cfg, fig)
         return fig, ax1, ax2
