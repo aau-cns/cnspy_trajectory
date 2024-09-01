@@ -18,6 +18,8 @@
 # BASED ON: https://github.com/aau-cns/cnspy_rosbag2csv
 # just install "pip install cnspy-rosbag2csv"
 ########################################################################################################################
+from bisect import bisect_left, bisect_right
+
 import numpy as np
 
 
@@ -65,32 +67,30 @@ class HistoryBuffer:
         self.set_dict(dict_t)
 
     def get_idx_before_t(self, t):
-        idx = 0
-        for t_ in self.t_vec:
-            if t_ >= t:
-                # if idx = 0:  not in list
-                return idx - 1
-            idx += 1
-        # not in list
-        return -1
+        'Find rightmost value less than x'
+        idx = bisect_left(self.t_vec, t)
+        if idx:
+            return idx-1
+        else:
+            return -1
+
 
     def get_idx_after_t(self, t):
-        idx = 0
-        for t_ in self.t_vec:
-            if t_ > t:
-                return idx
-            idx += 1
-        # not in list
+        'Find leftmost value greater than x'
+        idx = bisect_right(self.t_vec, t)
+        if idx != len(self.t_vec):
+            return idx
         return -1
 
     def get_idx_at_t(self, t):
-        idx = 0
-        for t_ in self.t_vec:
-            if t_ == t:
-                return max(0, idx)
-            idx += 1
-        # not in list
+        'Find rightmost value less than or equal to x'
+        i = bisect_right(self.t_vec, t)
+        if i > 0:
+            idx = i - 1
+            if self.t_vec[idx] == t:
+                return idx
         return -1
+
 
     def exists_at_t(self, t):
         try:
