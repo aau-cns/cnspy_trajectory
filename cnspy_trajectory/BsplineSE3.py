@@ -155,6 +155,11 @@ class BsplineSE3:
         return [False, None, None, None, None, None, None, None, None]
 
     def get_trajectory(self, t_arr, interp_type=TrajectoryInterpolationType.cubic, round_decimals=4):
+        if isinstance(t_arr, list):
+            t_arr = np.array(t_arr)
+        if t_arr.ndim == 1:
+            t_arr = np.array([t_arr])
+
         t_rows, t_cols = t_arr.shape
         p_vec = np.zeros((t_rows, 3))
         q_vec = np.hstack((np.zeros((t_rows, 3)), np.ones((t_rows, 1)) ))
@@ -211,7 +216,7 @@ class BsplineSE3:
         # like OpenVINS did in https://github.com/rpng/open_vins/blob/master/ov_core/src/sim/BsplineSE3.cpp!
         # A generic basis matrix can be computed from Sec 3.1 in
         # https://xiaoxingchen.github.io/2020/03/02/bspline_in_so3/general_matrix_representation_for_bsplines.pdf!
-        if uniform_timestamps:
+        if uniform_timestamps and len(hist_pose.t_vec) > 1:
 
             t_arr = np.array(hist_pose.t_vec)
             dt_avg = max(min_dt, round(np.mean(np.diff(t_arr)), round_decimals))
