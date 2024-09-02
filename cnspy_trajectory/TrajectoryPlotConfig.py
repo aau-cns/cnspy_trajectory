@@ -84,7 +84,14 @@ class TrajectoryPlotConfig():
             if not os.path.exists(cfg.result_dir):
                 os.makedirs(cfg.result_dir)
 
-            filename = os.path.join(cfg.result_dir, cfg.save_fn)
+            filename = os.path.abspath( os.path.join(cfg.result_dir, cfg.save_fn))
+            [root, ext] = os.path.splitext(filename)
+            [head, tail] = os.path.split(root)
+            try:  # else already exists
+                os.makedirs(head)
+            except:
+                pass
+
             print("save to file: " + filename)
             plt.savefig(filename, dpi=int(cfg.dpi))
         if cfg.show:
