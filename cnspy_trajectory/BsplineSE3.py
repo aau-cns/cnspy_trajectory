@@ -236,7 +236,7 @@ class BsplineSE3:
                     t_vec.append(t_i)
             self.hist_ctrl_pts.set(t_vec, T_vec, round_decimals=round_decimals)
         else:
-            self.hist_ctrl_pts.set_dict(dict_t=hist_pose)
+            self.hist_ctrl_pts.set(hist_pose.t_vec, hist_pose.val_vec, round_decimals=round_decimals)
 
         pass
 
