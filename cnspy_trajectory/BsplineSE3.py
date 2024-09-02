@@ -32,6 +32,8 @@ import spatialmath.base as smb
 from cnspy_trajectory.HistoryBuffer import HistoryBuffer
 from cnspy_trajectory.SpatialConverter import SpatialConverter
 from cnspy_trajectory.Trajectory import Trajectory
+from cnspy_trajectory.TrajectoryBase import TrajectoryBase
+
 
 class TrajectoryInterpolationType(Enum):
     cubic = 'cubic' #  cubic b-spline to ensure C²-continuity
@@ -155,10 +157,7 @@ class BsplineSE3:
         return [False, None, None, None, None, None, None, None, None]
 
     def get_trajectory(self, t_arr, interp_type=TrajectoryInterpolationType.cubic, round_decimals=4):
-        if isinstance(t_arr, list):
-            t_arr = np.array(t_arr)
-        if t_arr.ndim == 1:
-            t_arr = np.array([t_arr])
+        t_arr = TrajectoryBase.convert_t_vec(t_arr)
 
         t_rows, t_cols = t_arr.shape
         p_vec = np.zeros((t_rows, 3))
@@ -220,12 +219,14 @@ class BsplineSE3:
 
             t_arr = np.array(hist_pose.t_vec)
             dt_avg = max(min_dt, round(np.mean(np.diff(t_arr)), round_decimals))
+            t_start=round(t_arr[0], round_decimals)
+            t_stop = round(t_arr[-1], round_decimals)
+            D = t_stop - t_start
 
-            D = t_arr[-1] - t_arr[0]
             num_steps = math.floor(D / dt_avg)
-            t_stop = t_arr[0] + num_steps * dt_avg
+            t_stop = round(t_start + num_steps * dt_avg, round_decimals)
 
-            t_arr = np.linspace(t_arr[0], t_stop, num=num_steps+1, endpoint=True)
+            t_arr = np.linspace(t_start, t_stop, num=num_steps+1, endpoint=True)
             T_vec = list()
             t_vec = list()
             for t_i in t_arr:
@@ -233,7 +234,6 @@ class BsplineSE3:
                 if T_i:
                     T_vec.append(T_i)
                     t_vec.append(t_i)
-
             self.hist_ctrl_pts.set(t_vec, T_vec, round_decimals=round_decimals)
         else:
             self.hist_ctrl_pts.set_dict(dict_t=hist_pose)

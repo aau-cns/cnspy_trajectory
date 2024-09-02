@@ -37,7 +37,7 @@ from cnspy_trajectory.PlotLineStyle import PlotLineStyle
 from cnspy_trajectory.TrajectoryPlotConfig import TrajectoryPlotConfig
 from cnspy_trajectory.TrajectoryPlotTypes import TrajectoryPlotTypes
 from cnspy_trajectory.TrajectoryPlotUtils import TrajectoryPlotUtils
-
+from cnspy_trajectory.HistoryBuffer import HistoryBuffer
 from cnspy_trajectory.SpatialConverter import SpatialConverter
 from cnspy_trajectory.pyplot_utils import set_axes_equal
 
@@ -48,7 +48,7 @@ class Trajectory(TrajectoryBase):
     q_vec = None # [x,y,z,w]
     dist = None  # cache
 
-    def __init__(self, t_vec=None, p_vec=None, q_vec=None, df=None, fn=None, fmt=None):
+    def __init__(self, t_vec=None, p_vec=None, q_vec=None, df=None, fn=None, fmt=None, hist_pose=None):
         """
             CTOR expects either a pandas.DataFrame or a (timestamp + position + quaternion) matrix
 
@@ -63,15 +63,12 @@ class Trajectory(TrajectoryBase):
             self.load_from_DataFrame(df, fmt_type=fmt)
         elif fn is not None:
             self.load_from_CSV(fn=fn)
+        elif hist_pose is not None and isinstance(hist_pose, HistoryBuffer):
+            self.load_from_hist(hist=hist_pose)
         elif t_vec is not None and p_vec is not None and q_vec is not None:
-            if isinstance(t_vec, list):
-                t_vec = np.array(t_vec)
-            if t_vec.ndim == 1:
-                t_vec = np.array([t_vec])
-            if t_vec.shape[0] == 1 and t_vec.shape[1] > 1:
-                t_vec = t_vec.T
+            self.set_t_vec(t_vec)
 
-            t_rows, t_cols = t_vec.shape
+            t_rows, t_cols = self.t_vec.shape
             p_rows, p_cols = p_vec.shape
             q_rows, q_cols = q_vec.shape
             assert (t_rows == p_rows)
@@ -80,7 +77,6 @@ class Trajectory(TrajectoryBase):
             assert (p_cols == 3)
             assert (q_cols == 4)
 
-            self.t_vec = t_vec
             self.p_vec = p_vec
             self.q_vec = q_vec
 
@@ -100,6 +96,23 @@ class Trajectory(TrajectoryBase):
     # overriding abstract method
     def clone(self):
         return Trajectory(t_vec=self.t_vec.copy(), p_vec=self.p_vec.copy(), q_vec=self.q_vec.copy())
+
+    # overriding abstract method
+    def load_from_hist(self, hist):
+        assert isinstance(hist, HistoryBuffer)
+
+        self.set_t_vec(hist.t_vec)
+        t_rows, t_cols = self.t_vec.shape
+        idx = 0
+
+        self.p_vec = np.zeros((t_rows,3))
+        self.q_vec = np.zeros((t_rows,4))
+
+        for T in hist.val_vec:
+            p, q = SpatialConverter.SE3_to_p_q_HTMQ(T)
+            self.p_vec[idx, :] = p
+            self.q_vec[idx, :] = q
+            idx += 1
 
     # overriding abstract method
     def load_from_DataFrame(self, df, fmt_type=None):

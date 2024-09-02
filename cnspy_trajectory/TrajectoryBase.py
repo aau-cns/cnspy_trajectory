@@ -31,6 +31,9 @@ from cnspy_timestamp_association.TimestampAssociation import TimestampAssociatio
 # abstract methods:
 # - to_DataFrame(self):
 # - load_from_DataFrame(self, df, fmt_type=None)
+from cnspy_trajectory.HistoryBuffer import HistoryBuffer
+
+
 class TrajectoryBase(ABC):
     t_vec = None
 
@@ -101,6 +104,23 @@ class TrajectoryBase(ABC):
         # call abstract method
         self.sample(indices_arr)
         return idx_t, t_arr_matched
+
+    @staticmethod
+    def convert_t_vec(t_vec):
+        if isinstance(t_vec, list):
+            t_vec = np.array(t_vec)
+        if t_vec.ndim == 1:
+            t_vec = np.array([t_vec])
+        if t_vec.shape[0] == 1 and t_vec.shape[1] > 1:
+            t_vec = t_vec.T
+        return t_vec
+
+    def set_t_vec(self, t_vec):
+        self.t_vec = TrajectoryBase.convert_t_vec(t_vec)
+
+    def load_from_hist(self, hist):
+        assert isinstance(hist, HistoryBuffer)
+        self.set_t_vec(hist.t_vec)
 
     def load_from_CSV(self, fn):
         if not os.path.isfile(fn):
