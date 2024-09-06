@@ -20,7 +20,7 @@
 # enum
 ########################################################################################################################
 import math
-
+from abc import ABC, abstractmethod
 import numpy
 import numpy as np
 import matplotlib.pyplot as plt
@@ -29,6 +29,7 @@ from mpl_toolkits.mplot3d import Axes3D  # <--- This is important for 3d plottin
 from spatialmath import base, SE3, UnitQuaternion
 
 import cnspy_numpy_utils.numpy_statistics
+from cnspy_csv2dataframe.CSV2DataFrame import CSV2DataFrame
 from cnspy_csv2dataframe.TUMCSV2DataFrame import TUMCSV2DataFrame
 from cnspy_numpy_utils.numpy_statistics import numpy_statistics
 from cnspy_spatial_csv_formats.CSVSpatialFormatType import CSVSpatialFormatType
@@ -42,6 +43,8 @@ from cnspy_trajectory.SpatialConverter import SpatialConverter
 from cnspy_trajectory.pyplot_utils import set_axes_equal
 
 # TODO: change quaternion order in the entire framework!
+
+
 class Trajectory(TrajectoryBase):
     #t_vec = None
     p_vec = None
@@ -138,6 +141,9 @@ class Trajectory(TrajectoryBase):
     def to_DataFrame(self):
         return TUMCSV2DataFrame.to_DataFrame(self.t_vec, self.p_vec, self.q_vec)
 
+    def to_CSV2DataFrame(self):
+        return CSV2DataFrame(df=self.to_DataFrame(), fmt=CSVSpatialFormatType.PoseStamped)
+
     def get_distance(self):
         if self.p_vec is not None:
             if self.dist is not None:
@@ -167,6 +173,7 @@ class Trajectory(TrajectoryBase):
     def get_accumulated_distances(self):
         return Trajectory.distances_from_start(self.p_vec)
 
+    @abstractmethod
     def get_rpy_vec(self):
         rpy_vec = np.zeros(np.shape(self.p_vec))
         for i in range(np.shape(self.p_vec)[0]):

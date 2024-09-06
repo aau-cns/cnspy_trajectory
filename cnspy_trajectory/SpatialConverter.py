@@ -232,7 +232,7 @@ class SpatialConverter:
         elif rot_err_rep == ErrorRepresentationType.theta_q:
             for i in range(len):
                 theta_vec[i] = SpatialConverter.quat2theta_q(q_vec[i])
-        elif rot_err_rep == ErrorRepresentationType.theta_so3:
+        elif rot_err_rep == ErrorRepresentationType.theta_so3 or rot_err_rep == ErrorRepresentationType.tau_se3:
             for i in range(len):
                 theta_vec[i] = SpatialConverter.quat2theta_so3(q_vec[i])
         elif rot_err_rep == ErrorRepresentationType.rpy_rad:

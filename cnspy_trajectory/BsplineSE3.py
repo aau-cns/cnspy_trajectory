@@ -240,10 +240,6 @@ class BsplineSE3:
 
         pass
 
-
-
-
-
     @staticmethod
     def interpolate_SPLIT_pose(pose_hist, timestamp, round_decimals=4) -> SE3:
         timestamp = round(timestamp, round_decimals)

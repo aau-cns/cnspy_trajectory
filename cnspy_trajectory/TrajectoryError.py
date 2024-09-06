@@ -63,6 +63,19 @@ class TrajectoryError(Trajectory):
             self.load_from_CSV(fn)
         pass
 
+    # overriding abstract method
+    def get_rpy_vec(self):
+        rpy_vec = np.zeros(np.shape(self.p_vec))
+        for i in range(np.shape(self.p_vec)[0]):
+            q = SpatialConverter.HTMQ_quaternion_to_Quaternion(self.q_vec[i, :])
+            rpy = q.unit().rpy(order='zyx')
+            rpy2= (rpy + np.pi) % (2 * np.pi) - np.pi
+            rpy_vec[i, :] = rpy2
+
+        #rpy_vec = np.unwrap(rpy_vec, axis=0)
+        return rpy_vec
+
+
     def get_ARMSE(self):
         if self.__ARMSE_p is None or self.__ARMSE_q_deg is None:
             self.compute_ARMSE()
