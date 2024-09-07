@@ -174,6 +174,11 @@ class SpatialConverter:
         return q_.unit().R
 
     @staticmethod
+    def p_q_to_tau_se3(p, q):
+        T_ = SpatialConverter.p_q_HTMQ_to_SE3(p, q)
+        return base.trlog(T_.A, twist=True)
+
+    @staticmethod
     def quat2theta_so3(q_err):
         # R = expm(skew(theta_so3))
         R_ = SpatialConverter.HTMQ_quaternion_to_SO3(q_err)

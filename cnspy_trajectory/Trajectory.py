@@ -173,7 +173,6 @@ class Trajectory(TrajectoryBase):
     def get_accumulated_distances(self):
         return Trajectory.distances_from_start(self.p_vec)
 
-    @abstractmethod
     def get_rpy_vec(self):
         rpy_vec = np.zeros(np.shape(self.p_vec))
         for i in range(np.shape(self.p_vec)[0]):

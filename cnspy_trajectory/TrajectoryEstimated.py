@@ -378,7 +378,8 @@ class TrajectoryEstimated(Trajectory):
             for i in range(self.num_elems()):
                 R = SpatialConverter.theta_q2rot(sigma_theta_diag_vec[i])
                 sigma_rpy_diag_vec[i] = SpatialConverter.rot2rpy(R, unit=unit)
-        elif self.format.rotation_error_representation == ErrorRepresentationType.theta_so3:
+        elif self.format.rotation_error_representation == ErrorRepresentationType.theta_so3 or \
+                self.format.rotation_error_representation == ErrorRepresentationType.tau_se3:
             for i in range(self.num_elems()):
                 R = SpatialConverter.theta_so3_2rot(sigma_theta_diag_vec[i])
                 sigma_rpy_diag_vec[i] = SpatialConverter.rot2rpy(R, unit=unit)
