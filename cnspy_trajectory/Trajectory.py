@@ -184,6 +184,13 @@ class Trajectory(TrajectoryBase):
         #rpy_vec = np.unwrap(rpy_vec, axis=0)
         return rpy_vec
 
+    def get_rpy_stddev(self):
+        rpy_vec = self.get_rpy_vec()
+        return np.std(rpy_vec, axis=0)
+
+    def get_pos_stddev(self):
+        return np.std(self.p_vec, axis=0)
+
     def get_angle_axis_vec(self, unit='rad'):
         phi_vec = np.zeros([np.shape(self.p_vec)[0], 1])
         axis_vec = np.zeros([np.shape(self.p_vec)[0], 3])

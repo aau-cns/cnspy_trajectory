@@ -176,6 +176,43 @@ class TrajectoryError(Trajectory):
         return fig, ax
 
 
+    @staticmethod
+    def plot_position_err(traj_est, traj_err, fig=None, cfg=None, traj_gt=None, axes=None):
+        assert(isinstance(traj_err, TrajectoryError))
+        assert(isinstance(traj_est, Trajectory))
+        assert (isinstance(cfg, TrajectoryPlotConfig))
+
+        if fig is None:
+            fig = plt.figure(figsize=(20, 15), dpi=int(cfg.dpi))
+
+        if axes is None or len(axes) < 2:
+            # create 2x2 grid
+            ax1 = fig.add_subplot(211)
+            ax2 = fig.add_subplot(212)
+        else:
+            ax1 = axes[0]
+            ax2 = axes[1]
+
+        # Error type text:
+        p_err_text, R_err_text = traj_err.traj_err_type.error_def()
+
+        traj_est.ax_plot_pos(ax=ax1, cfg=cfg)
+        if traj_gt:
+            assert (isinstance(traj_gt, Trajectory))
+            traj_gt.ax_plot_pos(ax=ax1, cfg=cfg, y_label_prefix='true ',
+                                colors=['darkred', 'darkgreen', 'darkblue'], labels=['gt_x', 'gt_y', 'gt_z'],
+                                ls=PlotLineStyle(linestyle='-.', linewidth=0.5))
+        traj_err.ax_plot_pos(ax=ax2, cfg=cfg)
+
+        ax1.set_ylabel('position est [m]')
+        ax2.set_ylabel(p_err_text + 'position err [m]')
+
+        ax1.grid(visible=True)
+        ax2.grid(visible=True)
+
+        TrajectoryPlotConfig.show_save_figure(cfg, fig)
+
+        return fig, ax1, ax2
 
     @staticmethod
     def plot_pose_err(traj_est, traj_err, fig=None, cfg=None, angles=False, plot_rpy=False, traj_gt=None, axes=None):
