@@ -204,6 +204,12 @@ class SpatialConverter:
         return R_
 
     @staticmethod
+    def theta_to_T(theta_se3) -> np.ndarray:
+        # returns a 4x4 homogenous transformation matrix
+        return base.trexp(S=theta_se3)
+
+
+    @staticmethod
     def quat2theta_R(q_err):
         # R = I + skew(theta_R)
         R_ = SpatialConverter.HTMQ_quaternion_to_SO3(q_err)
