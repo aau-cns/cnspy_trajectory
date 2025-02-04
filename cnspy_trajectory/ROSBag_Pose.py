@@ -23,6 +23,7 @@ from tqdm import tqdm
 import numpy as np
 from spatialmath import UnitQuaternion, SE3
 
+import geometry_msgs.msg
 from cnspy_trajectory.HistoryBuffer import HistoryBuffer, get_key_from_value
 
 
@@ -101,6 +102,18 @@ class ROSBag_Pose:
                 "ROSBag_Pose.extract(): Unexpected error while reading the bag file!\n * try: $ rosbag fix <bagfile> <fixed>")
             return HistoryBuffer()
         return HistoryBuffer(dict_t=hist_poses)
+
+    @staticmethod
+    def geometry_msgs_pose_to_SE3(pose):
+
+        p = np.array([pose.position.x, pose.position.y, pose.position.z])
+        q_GB = [pose.orientation.w, pose.orientation.x, pose.orientation.y,
+                pose.orientation.z]
+
+        q = UnitQuaternion(q_GB).unit()
+        T_GLOBAL_BODY = SE3.Rt(q.R, p, check=True)
+        return T_GLOBAL_BODY
+
 
     @staticmethod
     def extract_poses(bag, dict_topic_pose_body, dict_senor_topic_pose, num_messages=None, round_decimals=6, dict_T_BODY_SENSOR=None) -> dict:
