@@ -61,6 +61,19 @@ class ROSBag_Pose:
                         q = UnitQuaternion(q_GB).unit()
                         T_GLOBAL_BODY = SE3.Rt(q.R, p, check=True)
                         pass
+                    elif hasattr(msg, 'header') and hasattr(msg, 'pose'):  # POSE_STAMPED || POSEWITHCOVARIANCE_STAMPED
+                        if hasattr(msg.pose, 'covariance'):  # PoseWithCovariance
+                            t = np.array([msg.pose.pose.position.x, msg.pose.pose.position.y, msg.pose.pose.position.z])
+                            q_GB = [msg.pose.pose.orientation.w, msg.pose.pose.orientation.x, msg.pose.pose.orientation.y,
+                                    msg.pose.pose.orientation.z]
+                        elif hasattr(msg.pose, 'position'):  # Pose
+                            t = np.array([msg.pose.position.x, msg.pose.position.y, msg.pose.position.z])
+                            q_GB = [msg.pose.orientation.w, msg.pose.orientation.x, msg.pose.orientation.y,
+                                    msg.pose.orientation.z]
+
+                        q = UnitQuaternion(q_GB, norm=True)
+                        T_GLOBAL_BODY = SE3.Rt(q.R, t, check=True)
+                        pass
                     elif hasattr(msg, 'header') and hasattr(msg, 'pose'):  # POSE_STAMPED
                         t = np.array([msg.pose.position.x, msg.pose.position.y, msg.pose.position.z])
                         q_GB = [msg.pose.orientation.w, msg.pose.orientation.x, msg.pose.orientation.y,
@@ -69,6 +82,7 @@ class ROSBag_Pose:
                         q = UnitQuaternion(q_GB, norm=True)
                         T_GLOBAL_BODY = SE3.Rt(q.R, t, check=True)
                         pass
+
                     elif hasattr(msg, 'header') and hasattr(msg, 'transform'):
                         t = np.array(
                             [msg.transform.translation.x, msg.transform.translation.y, msg.transform.translation.z])
