@@ -21,13 +21,50 @@
 import yaml
 from tqdm import tqdm
 import numpy as np
-from spatialmath import UnitQuaternion, SE3
-
+from spatialmath import UnitQuaternion, SO3, SE3
+from spatialmath.base.quaternions import qslerp
 import geometry_msgs.msg
 from cnspy_trajectory.HistoryBuffer import HistoryBuffer, get_key_from_value
 
 
 class ROSBag_Pose:
+
+    @staticmethod
+    def get_pose(hist_poses: HistoryBuffer, timestamp) -> SE3:
+        if hist_poses.exists_at_t(timestamp) is None:
+            interpol = True
+            # interpolate between poses
+            [t1, T_GLOBAL_BODY_T1] = hist_poses.get_before_t(timestamp)
+            [t2, T_GLOBAL_BODY_T2] = hist_poses.get_after_t(timestamp)
+
+            if t1 is None or t2 is None:
+                return None
+
+            dt = t2 - t1
+            dt_i = timestamp - t1
+            i = dt_i / dt
+
+            q0 = UnitQuaternion(T_GLOBAL_BODY_T1.R)
+            q1 = UnitQuaternion(T_GLOBAL_BODY_T2.R)
+            p0 = T_GLOBAL_BODY_T1.t
+            p1 = T_GLOBAL_BODY_T2.t
+
+            qr = UnitQuaternion(qslerp(q0.vec, q1.vec, i, shortest=True), norm=True)
+            pr = p0 * (1 - i) + i * p1
+
+            # interpolate between poses:
+            T_GLOBAL_BODY = SE3.Rt(qr.R, pr, check=True)
+            if not SE3.isvalid(T_GLOBAL_BODY, check=True):
+                if T_GLOBAL_BODY.A is None:
+                    return None
+                else:
+                    q = UnitQuaternion(SO3(T_GLOBAL_BODY.R, check=False), norm=True).unit()
+                    T_GLOBAL_BODY = SE3.Rt(q.R, T_GLOBAL_BODY.t, check=True)
+            return T_GLOBAL_BODY
+        else:
+            return hist_poses.get_at_t(timestamp)
+        pass
+
     @staticmethod
     def extract_pose(bag, num_messages, topic_pose_body, round_decimals=6, T_BODY_SENSOR=None) -> HistoryBuffer:
         """
@@ -127,7 +164,6 @@ class ROSBag_Pose:
         q = UnitQuaternion(q_GB).unit()
         T_GLOBAL_BODY = SE3.Rt(q.R, p, check=True)
         return T_GLOBAL_BODY
-
 
     @staticmethod
     def extract_poses(bag, dict_topic_pose_body, dict_senor_topic_pose, num_messages=None, round_decimals=6, dict_T_BODY_SENSOR=None) -> dict:
